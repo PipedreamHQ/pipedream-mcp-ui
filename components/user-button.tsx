@@ -23,7 +23,8 @@ export function UserButton() {
         size="sm"
         onClick={async () => {
           await signOut()
-          router.push(signInUrl)
+          // Redirect directly to the current page instead of going to sign-in
+          router.push(pathname)
         }}
       >
         Sign out

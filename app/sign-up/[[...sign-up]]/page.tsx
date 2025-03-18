@@ -1,6 +1,12 @@
+"use client"
+
 import { SignUp } from "@clerk/nextjs"
+import { useSearchParams } from "next/navigation"
 
 export default function Page() {
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get("redirect_url") || "/"
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/20">
       <SignUp
@@ -10,8 +16,8 @@ export default function Page() {
             card: "shadow-lg",
           },
         }}
+        redirectUrl={redirectUrl}
       />
     </div>
   )
 }
-
