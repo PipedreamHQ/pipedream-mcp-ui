@@ -19,6 +19,11 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
 
   // Generate a unique MCP server URL for the signed-in user
   const mcpServerUrl = userId ? `https://mcp.pipedream.com/${userId}/${app.name_slug}` : null
+  
+  // Create an obfuscated version of the URL for display
+  const displayUrl = mcpServerUrl ? 
+    `https://mcp.pipedream.com/****/${app.name_slug}` : 
+    null
 
   const copyToClipboard = () => {
     if (!mcpServerUrl) return
@@ -66,7 +71,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           </Button>
         </div>
         <code className="text-xs font-mono bg-background p-1.5 rounded border block w-full overflow-x-auto">
-          {mcpServerUrl}
+          {displayUrl}
         </code>
       </div>
     )
