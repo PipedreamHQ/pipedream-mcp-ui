@@ -13,16 +13,16 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: "Pipedream MCP Servers Library",
-  description: "Search and copy MCP server URLs for Pipedream integrations",
+  title: "MCP Servers from Pipedream",
+  description: "Browse thousands of MCP servers from Pipedream",
   generator: 'v0.dev',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://mcp.pipedream.com/',
+    url: 'https://pipedream.com/mcp/',
     siteName: 'Pipedream MCP Servers',
-    title: 'Pipedream MCP Servers Library',
-    description: 'Search and copy MCP server URLs for Pipedream integrations',
+    title: 'Pipedream MCP Servers',
+    description: 'Browse thousands of MCP servers from Pipedream',
     images: [
       {
         url: 'https://res.cloudinary.com/pipedreamin/image/upload/v1688088928/mcp-servers-og.png',
