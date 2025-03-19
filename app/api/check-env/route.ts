@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
               success: true,
               message: "Successfully connected to Pipedream API",
               appCount: result.data?.length || 0,
-              actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+              actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using UUID stored in Clerk metadata"
             }
           })
         } catch (pipedreamError) {
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
               projectId: !process.env.PIPEDREAM_PROJECT_ID,
               externalUserId: !process.env.PIPEDREAM_EXTERNAL_USER_ID
             },
-            actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+            actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using UUID stored in Clerk metadata"
           }
         })
       }

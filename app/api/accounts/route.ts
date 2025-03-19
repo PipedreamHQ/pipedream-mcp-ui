@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createBackendClient } from "@pipedream/sdk/server"
 import { getAuth } from "@clerk/nextjs/server"
+import { getPipedreamExternalUserId } from "@/lib/clerk"
 
 // Initialize Pipedream client
 const getPipedreamClient = () => {
@@ -15,18 +16,27 @@ const getPipedreamClient = () => {
   })
 }
 
-// Helper function to get userId safely
-async function getUserId(req: NextRequest) {
+// Helper function to get externalUserId safely
+async function getExternalUserId(req: NextRequest) {
   try {
-    // Get the full auth object for debugging
-    const auth = getAuth(req)
-    const { userId } = auth
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
+    let userId = null
     
-    // Only log in debug mode
-    if (debugMode) {
-      console.log("Retrieved Clerk auth object:", JSON.stringify(auth, null, 2))
-      console.log("Retrieved Clerk userId:", userId)
+    try {
+      // Try to get auth from Clerk
+      const auth = getAuth(req)
+      userId = auth.userId
+      
+      // Only log in debug mode
+      if (debugMode) {
+        console.log("Retrieved Clerk auth object:", JSON.stringify(auth, null, 2))
+        console.log("Retrieved Clerk userId:", userId)
+      }
+    } catch (authError) {
+      if (debugMode) {
+        console.error("Error getting auth, using fallback:", authError)
+      }
+      // Continue with the function, we'll use a fallback userId
     }
     
     // Only log headers for debugging in debug mode
@@ -40,11 +50,41 @@ async function getUserId(req: NextRequest) {
       console.log("Request headers:", headers)
     }
     
-    return userId
+    // Check for a session ID in headers
+    const sessionId = req.headers.get('x-session-id')
+    
+    let externalUserId = null
+    
+    // If we have a session ID header, prioritize that
+    if (sessionId) {
+      externalUserId = sessionId
+      if (debugMode) {
+        console.log("Using session ID from header as external user ID:", externalUserId)
+      }
+    } 
+    // If we have a userId, generate a UUID based on it
+    else if (userId) {
+      externalUserId = await getPipedreamExternalUserId(userId)
+      
+      if (debugMode) {
+        console.log("Using Pipedream external user ID based on userId:", externalUserId)
+      }
+    } 
+    // No userId or session ID, generate a random UUID
+    else {
+      const { randomUUID } = await import('crypto')
+      externalUserId = randomUUID()
+      
+      if (debugMode) {
+        console.log("Using generated UUID as external user ID:", externalUserId)
+      }
+    }
+    
+    return externalUserId
   } catch (error) {
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     if (debugMode) {
-      console.error("Error getting user ID:", error)
+      console.error("Error getting external user ID:", error)
     }
     // For demo purposes, return a placeholder user ID
     return "demo-user-id"
@@ -54,14 +94,14 @@ async function getUserId(req: NextRequest) {
 // GET handler for listing accounts
 export async function GET(request: NextRequest) {
   try {
-    // Get current user ID from auth
-    const userId = await getUserId(request)
+    // Get external user ID for Pipedream
+    const externalUserId = await getExternalUserId(request)
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
-    // If no userId is available, return mock data
-    if (!userId) {
+    // If no externalUserId is available, return mock data
+    if (!externalUserId) {
       if (debugMode) {
-        console.warn("No user ID available from auth, returning mock data")
+        console.warn("No external user ID available, returning mock data")
       }
       return NextResponse.json({
         data: {
@@ -101,7 +141,7 @@ export async function GET(request: NextRequest) {
             {
               id: "mock-account-1",
               name: "Mock GitHub Account",
-              external_id: userId || "demo-user",
+              external_id: externalUserId || "demo-user",
               healthy: true,
               dead: false,
               app: {
@@ -114,7 +154,7 @@ export async function GET(request: NextRequest) {
             {
               id: "mock-account-2",
               name: "Mock Slack Account",
-              external_id: userId || "demo-user",
+              external_id: externalUserId || "demo-user",
               healthy: true,
               dead: false,
               app: {
@@ -142,14 +182,9 @@ export async function GET(request: NextRequest) {
       })
     }
     
-    // Hard-code the user ID that you confirmed works
-    // Remove or modify this once we understand the Clerk auth issue
-    const hardcodedUserId = "user_2uSmv3Nks06I6kEDYnJb2Tk0Wzg";
-    
-    // Prioritize the hardcoded ID for now, then fall back to environment variable or Clerk userId
-    const externalUserId = hardcodedUserId || process.env.PIPEDREAM_EXTERNAL_USER_ID || userId;
+    // Use the external user ID we've retrieved, which is either the UUID from metadata or newly generated
     if (debugMode) {
-      console.log(`Fetching accounts with external_user_id: ${externalUserId} (Clerk userId: ${userId}, ENV EXTERNAL_USER_ID: ${process.env.PIPEDREAM_EXTERNAL_USER_ID || 'not set'})`)
+      console.log(`Fetching accounts with external_user_id: ${externalUserId} (ENV EXTERNAL_USER_ID: ${process.env.PIPEDREAM_EXTERNAL_USER_ID || 'not set'})`)
     }
     
     const accounts = await pd.getAccounts({
@@ -193,19 +228,12 @@ export async function GET(request: NextRequest) {
 // DELETE handler for deleting an account
 export async function DELETE(request: NextRequest) {
   try {
-    // Get current user ID from auth
-    const userId = await getUserId(request)
+    // Get external user ID for Pipedream - will always return a value due to fallback
+    const externalUserId = await getExternalUserId(request)
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
-    // If no userId is available, simulate success
-    if (!userId) {
-      if (debugMode) {
-        console.warn("No user ID available from auth, simulating successful deletion")
-      }
-      return NextResponse.json(
-        { success: true, message: "Account deletion simulated (no auth)" },
-        { status: 200 }
-      )
+    if (debugMode) {
+      console.log(`Using external user ID for delete operation: ${externalUserId}`)
     }
     
     const { searchParams } = new URL(request.url)
@@ -246,12 +274,9 @@ export async function DELETE(request: NextRequest) {
     
     const pd = getPipedreamClient()
     
-    // Use the PIPEDREAM_EXTERNAL_USER_ID environment variable if available, otherwise use the Clerk userId
-    const externalUserId = process.env.PIPEDREAM_EXTERNAL_USER_ID || userId;
-    
     // Log operation
     if (debugMode) {
-      console.log(`Deleting account ${accountId} for external user ${externalUserId} (Clerk userId: ${userId})`)
+      console.log(`Deleting account ${accountId} for external user ${externalUserId}`)
     }
     
     // Delete the account

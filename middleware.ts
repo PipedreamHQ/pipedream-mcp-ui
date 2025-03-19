@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
- 
+
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   // Check if we're in debug mode
@@ -23,7 +23,11 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
  
-// See "Matching Paths" below to learn more
+// Configuration for Next.js middleware
 export const config = {
-  matcher: ["/test/:path*", "/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  // Only run middleware on these paths
+  matcher: [
+    "/test/:path*", 
+    "/api/check-env"
+  ],
 }
