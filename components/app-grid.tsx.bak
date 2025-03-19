@@ -54,7 +54,7 @@ export default function AppGrid() {
 
       queryParams.set("page", page.toString())
 
-      console.log("Fetching MCP servers with params:", queryParams.toString())
+      console.log("Fetching apps with params:", queryParams.toString())
 
       const response = await fetch(`/api/apps?${queryParams.toString()}`)
       const data = await response.json()
@@ -85,7 +85,7 @@ export default function AppGrid() {
       setCurrentPage(page)
     } catch (error) {
       console.error("Error fetching apps:", error)
-      setError("Failed to load MCP servers. Please try again later.")
+      setError("Failed to load apps. Please try again later.")
       setErrorDetails(error instanceof Error ? error.message : String(error))
     } finally {
       setLoading(false)
@@ -138,10 +138,10 @@ export default function AppGrid() {
       <div className="text-center py-16">
         <p className="text-muted-foreground">
           {categoryFilter
-            ? `No MCP servers found in the "${categoryFilter}" category${searchQuery ? ` matching "${searchQuery}"` : ""}.`
+            ? `No apps found in the "${categoryFilter}" category${searchQuery ? ` matching "${searchQuery}"` : ""}.`
             : searchQuery
-              ? `No MCP servers found matching "${searchQuery}".`
-              : "No MCP servers found."}
+              ? `No apps found matching "${searchQuery}".`
+              : "No apps found."}
         </p>
       </div>
     )
@@ -154,7 +154,7 @@ export default function AppGrid() {
           <Info className="h-4 w-4" />
           <AlertTitle>Using Pipedream API</AlertTitle>
           <AlertDescription>
-            The application is currently using data from the Pipedream API because the Supabase database is empty.
+            The app is currently using data from the Pipedream API because the Supabase database is empty.
           </AlertDescription>
         </Alert>
       )}
@@ -163,56 +163,6 @@ export default function AppGrid() {
         {apps.map((app) => (
           <AppCard key={app.id} app={app} />
         ))}
-        
-        {/* Add hardcoded "Coming soon" cards */}
-        <AppCard 
-          app={{
-            id: "coming-soon-claude",
-            name: "Claude",
-            name_slug: "claude", 
-            description: "Claude is a powerful AI assistant built by Anthropic. Coming soon to our MCP server platform.",
-            categories: ["AI"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-windsurf",
-            name: "Windsurf",
-            name_slug: "windsurf", 
-            description: "Windsurf browser integration with MCP servers is coming soon.",
-            categories: ["Browser", "Productivity"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-typescript",
-            name: "TypeScript",
-            name_slug: "typescript", 
-            description: "Use MCP servers directly from your TypeScript applications.",
-            categories: ["Development"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-python",
-            name: "Python",
-            name_slug: "python", 
-            description: "Python SDK for interacting with MCP servers is coming soon.",
-            categories: ["Development"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
       </div>
 
       {pageInfo?.has_more && (

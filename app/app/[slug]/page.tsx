@@ -37,7 +37,9 @@ async function getAppBySlug(slug: string) {
 
 async function getAppActions(slug: string) {
   try {
-    console.log(`Fetching actions for app with slug: ${slug}`)
+    if (process.env.ENVIRONMENT === "development") {
+      console.log(`Fetching actions for app with slug: ${slug}`)
+    }
 
     // First, get the app ID from the slug
     const { data: appData, error: appError } = await supabase
@@ -52,7 +54,9 @@ async function getAppActions(slug: string) {
     }
 
     const appId = appData.APP_ID
-    console.log(`Found app ID: ${appId} for slug: ${slug}`)
+    if (process.env.ENVIRONMENT === "development") {
+      console.log(`Found app ID: ${appId} for slug: ${slug}`)
+    }
 
     // Now fetch components using the app_id
     // Try with APP_ID (uppercase, matching the apps table convention)
@@ -89,10 +93,12 @@ async function getAppActions(slug: string) {
       actions = actionsLowercase
     }
 
-    console.log(`Found ${actions?.length || 0} actions for app ID ${appId}`)
+    if (process.env.ENVIRONMENT === "development") {
+      console.log(`Found ${actions?.length || 0} actions for app ID ${appId}`)
+    }
 
-    // Log the first action to see its structure
-    if (actions && actions.length > 0) {
+    // Log the first action to see its structure (only in development)
+    if (process.env.ENVIRONMENT === "development" && actions && actions.length > 0) {
       console.log("First action structure:", Object.keys(actions[0]))
       // Use JSON.stringify to safely log the object
       console.log("First action data:", JSON.stringify(actions[0]))
@@ -128,7 +134,7 @@ export default async function AppDetailPage({ params }: { params: { slug: string
           <Link href="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Apps
+              Back to MCP servers
             </Button>
           </Link>
 

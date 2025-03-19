@@ -1,16 +1,109 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
+import { createBackendClient } from "@pipedream/sdk/server"
 
-export async function GET() {
-  return NextResponse.json({
-    clerk: {
-      publishableKey: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      secretKey: !!process.env.CLERK_SECRET_KEY,
-    },
-    supabase: {
-      url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    },
-    nodeEnv: process.env.NODE_ENV,
-  })
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const includePipedreamTest = searchParams.get("includePipedreamTest") === "true"
+    const environment = process.env.ENVIRONMENT || "development"
+    
+    // Only return detailed environment status in development mode
+    if (environment === "development") {
+      // Check if all the required environment variables are set
+      const envStatus = {
+        clerk: {
+          publishableKey: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+          secretKey: !!process.env.CLERK_SECRET_KEY,
+        },
+        supabase: {
+          url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+          anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        },
+        pipedream: {
+          environment: environment,
+          apiHost: !!process.env.API_HOST,
+          oauthClientId: !!process.env.OAUTH_CLIENT_ID,
+          clientId: !!process.env.CLIENT_ID,
+          oauthClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
+          clientSecret: !!process.env.CLIENT_SECRET,
+          projectId: !!process.env.PROJECT_ID,
+          externalUserId: !!process.env.EXTERNAL_USER_ID,
+        },
+        nodeEnv: process.env.NODE_ENV,
+      }
+      
+      // If requested, test Pipedream API connectivity
+      if (includePipedreamTest) {
+      const hasClientId = process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID
+      const hasClientSecret = process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET
+      
+      if (hasClientId && hasClientSecret && process.env.PROJECT_ID) {
+        try {
+          console.log("Testing Pipedream API connectivity...")
+          
+          const pd = createBackendClient({
+            apiHost: process.env.API_HOST,
+            environment: process.env.ENVIRONMENT || "development",
+            credentials: {
+              clientId: process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID,
+              clientSecret: process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET,
+            },
+            projectId: process.env.PROJECT_ID,
+          })
+          
+          // Just try to list apps as a simple API test
+          const result = await pd.getApps({ limit: 1 })
+          
+          // Add the test result to the response
+          return NextResponse.json({
+            ...envStatus,
+            pipedreamTest: {
+              success: true,
+              message: "Successfully connected to Pipedream API",
+              appCount: result.data?.length || 0,
+              actualExternalUserId: process.env.EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+            }
+          })
+        } catch (pipedreamError) {
+          console.error("Pipedream API test failed:", pipedreamError)
+          return NextResponse.json({
+            ...envStatus,
+            pipedreamTest: {
+              success: false,
+              message: "Failed to connect to Pipedream API",
+              error: String(pipedreamError)
+            }
+          })
+        }
+      } else {
+        return NextResponse.json({
+          ...envStatus,
+          pipedreamTest: {
+            success: false,
+            message: "Missing Pipedream credentials",
+            missingCredentials: {
+              clientId: !(process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID),
+              clientSecret: !(process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET),
+              apiHost: !process.env.API_HOST,
+              projectId: !process.env.PROJECT_ID,
+              externalUserId: !process.env.EXTERNAL_USER_ID
+            },
+            actualExternalUserId: process.env.EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+          }
+        })
+      }
+    }
+    }
+
+    // For non-development environments, just return minimal status
+    return NextResponse.json({
+      environment: environment
+    })
+  } catch (error) {
+    console.error("Error checking environment:", error)
+    return NextResponse.json(
+      { error: "Failed to check environment variables", details: String(error) },
+      { status: 500 }
+    )
+  }
 }
-

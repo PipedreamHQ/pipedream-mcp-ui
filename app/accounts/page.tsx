@@ -34,17 +34,46 @@ export default function AccountsPage() {
   const fetchAccounts = async () => {
     setLoading(true)
     try {
+      // First check if our environment variables are correctly configured
+      const envCheck = await fetch("/api/check-env")
+      const envData = await envCheck.json()
+      console.log("Environment check:", envData)
+      
+      // Log current user information from Clerk's client-side hooks
+      console.log("Current user from Clerk client:", { 
+        userId, 
+        isLoaded,
+        isSignedIn: userId !== null && isLoaded
+      })
+      
       const response = await fetch("/api/accounts")
       if (!response.ok) {
-        throw new Error("Failed to fetch accounts")
+        const errorText = await response.text()
+        console.error("API Response error:", errorText)
+        throw new Error(`Failed to fetch accounts: ${response.status} ${response.statusText}`)
       }
+      
       const data = await response.json()
-      setAccounts(data.data?.accounts || [])
+      console.log("Accounts API response (full):", JSON.stringify(data, null, 2))
+      
+      // Handle either data structure:
+      // data.data.accounts (from your example)
+      // OR data.data (from Pipedream API response)
+      if (data.data?.accounts) {
+        console.log("Using data.data.accounts structure")
+        setAccounts(data.data.accounts)
+      } else if (Array.isArray(data.data)) {
+        console.log("Using data.data array structure")
+        setAccounts(data.data)
+      } else {
+        console.log("No accounts found in response, using empty array")
+        setAccounts([])
+      }
     } catch (error) {
       console.error("Error fetching accounts:", error)
       toast({
         title: "Error",
-        description: "Failed to load connected accounts",
+        description: "Failed to load connected accounts. Check console for details.",
         variant: "destructive",
       })
     } finally {
@@ -119,9 +148,60 @@ export default function AccountsPage() {
     )
   }
 
+  // Helper function to test Pipedream API directly - only shown in development
+  const testPipedreamApi = async () => {
+    try {
+      // First test connection through the check-env endpoint
+      const response = await fetch(`/api/check-env?includePipedreamTest=true`)
+      const data = await response.json()
+      console.log("Pipedream API test result:", data)
+      
+      // Log current user info from client side
+      console.log("Current user info from client:", {
+        clerkUserId: userId,
+        externalUserId: data.pipedream?.externalUserId ? "Set in ENV" : "Using Clerk ID"
+      })
+      
+      // Then try the accounts endpoint explicitly
+      console.log("Testing accounts endpoint directly...")
+      const accountsResponse = await fetch("/api/accounts")
+      const accountsData = await accountsResponse.json()
+      console.log("Direct accounts API response:", accountsData)
+      
+      // Display count of accounts found
+      const accountsCount = accountsData?.data?.accounts?.length || 
+                           (Array.isArray(accountsData?.data) ? accountsData.data.length : 0);
+      
+      toast({
+        title: "Pipedream API test",
+        description: `Test ${data.pipedreamTest?.success ? 'succeeded' : 'failed'}. Found ${accountsCount} accounts. Check console for details.`,
+        variant: data.pipedreamTest?.success ? "default" : "destructive",
+      })
+    } catch (error) {
+      console.error("Error testing Pipedream API:", error)
+      toast({
+        title: "Error", 
+        description: "Failed to test Pipedream API. Check console for details.",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="container py-10">
-      <h1 className="text-3xl font-bold mb-8">Connected Accounts</h1>
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-bold">Connected accounts</h1>
+        <div className="flex gap-2">
+          {process.env.NODE_ENV === "development" && (
+            <Button variant="secondary" onClick={testPipedreamApi}>
+              Test API
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => router.push("/")}>
+            Back to MCP servers
+          </Button>
+        </div>
+      </div>
       
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -147,10 +227,10 @@ export default function AccountsPage() {
             <div className="text-center py-10">
               <h3 className="text-lg font-medium mb-2">No connected accounts</h3>
               <p className="text-muted-foreground mb-4">
-                You haven't connected any accounts yet. Visit the apps page to connect your first account.
+                You haven't connected any accounts yet.
               </p>
               <Button onClick={() => router.push("/")}>
-                Browse Apps
+                Browse MCP servers
               </Button>
             </div>
           </CardContent>

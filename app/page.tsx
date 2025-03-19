@@ -10,7 +10,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-10">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">AI Developer Toolkit by Pipedream</h1>
+            <h1 className="text-4xl font-bold tracking-tight">AI developer toolkit by Pipedream</h1>
             <p className="text-muted-foreground">
               Easily add more than 2,500 APIs and 8k prebuilt tools to Claude, Cursor, or any other MCP client
             </p>

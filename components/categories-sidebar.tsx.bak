@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function MCPServerCategoriesSidebar() {
+export default function CategoriesSidebar() {
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -55,7 +55,7 @@ export default function MCPServerCategoriesSidebar() {
   if (loading) {
     return (
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold mb-4">MCP Server categories</h2>
+        <h2 className="text-lg font-semibold mb-4">Categories</h2>
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton key={i} className="h-8 w-full mb-2" />
         ))}
@@ -65,7 +65,7 @@ export default function MCPServerCategoriesSidebar() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">MCP Server categories</h2>
+      <h2 className="text-lg font-semibold mb-4">Categories</h2>
       <ScrollArea className="h-[calc(100vh-250px)]">
         <div className="space-y-1 pr-4">
           <Button
@@ -73,7 +73,7 @@ export default function MCPServerCategoriesSidebar() {
             className="w-full justify-start"
             onClick={() => handleCategoryClick("")}
           >
-            All MCP Servers
+            All Apps
           </Button>
 
           {categories.map((category) => (
