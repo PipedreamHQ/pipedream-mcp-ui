@@ -34,21 +34,14 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
     async function getExternalUserId() {
       if (user) {
         try {
-          // First check if we already have a UUID in sessionStorage
+          // First check if we already have a UUID in sessionStorage for this page session
+          // This ensures we use the same ID across the whole browsing session
           const storedId = sessionStorage.getItem('pdExternalUserId')
           
           if (storedId) {
             console.log("Using stored UUID from session:", storedId)
             
-            // Call the server with the existing UUID to ensure consistency
-            const response = await fetch('/api/external-user-id', {
-              headers: {
-                'x-session-id': storedId
-              }
-            })
-            
-            // Set up a listener to add the session ID to other API calls
-            // for pages that need to access Pipedream APIs
+            // Set up a listener to add the session ID to API calls for consistency
             if (typeof window !== 'undefined') {
               const originalFetch = window.fetch;
               window.fetch = function(input, init = {}) {
@@ -68,39 +61,80 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
             return
           }
           
-          // If no stored ID, get a new UUID from the server
-          const response = await fetch('/api/external-user-id')
-          
-          if (response.ok) {
-            const data = await response.json()
-            if (data.externalUserId) {
-              console.log("Using server-generated UUID:", data.externalUserId)
-              const newUuid = data.externalUserId
-              
-              // Set up a listener to add the session ID to other API calls
-              if (typeof window !== 'undefined') {
-                const originalFetch = window.fetch;
-                window.fetch = function(input, init = {}) {
-                  // Only add the header for our API calls
-                  if (typeof input === 'string' && input.startsWith('/api/')) {
-                    init.headers = init.headers || {};
-                    init.headers = {
-                      ...init.headers,
-                      'x-session-id': newUuid
-                    };
-                  }
-                  return originalFetch(input, init);
-                };
+          // If no stored session ID, try to get the UUID from Clerk metadata
+          // This is the persistent UUID across sessions
+          try {
+            const response = await fetch('/api/user-metadata')
+            
+            if (response.ok) {
+              const data = await response.json()
+              if (data.pd_external_user_id) {
+                console.log("Retrieved external user ID from Clerk metadata:", data.pd_external_user_id)
+                const clerkUuid = data.pd_external_user_id
+                
+                // Set up fetch API interception to add the header consistently
+                if (typeof window !== 'undefined') {
+                  const originalFetch = window.fetch;
+                  window.fetch = function(input, init = {}) {
+                    // Only add the header for our API calls
+                    if (typeof input === 'string' && input.startsWith('/api/')) {
+                      init.headers = init.headers || {};
+                      init.headers = {
+                        ...init.headers,
+                        'x-session-id': clerkUuid
+                      };
+                    }
+                    return originalFetch(input, init);
+                  };
+                }
+                
+                setExternalUserId(clerkUuid)
+                // Store in session storage so it persists during navigation
+                sessionStorage.setItem('pdExternalUserId', clerkUuid)
+                return
               }
-              
-              setExternalUserId(newUuid)
-              // Store in session storage so it persists during navigation
-              sessionStorage.setItem('pdExternalUserId', newUuid)
-              return
             }
+          } catch (clerkError) {
+            console.error("Error retrieving user metadata from Clerk:", clerkError)
+            // Continue to fallback mechanisms
           }
           
-          // If server call fails, we already checked sessionStorage, so continue to fallback
+          // If Clerk metadata retrieval fails, fall back to the external-user-id endpoint
+          try {
+            const response = await fetch('/api/external-user-id')
+            
+            if (response.ok) {
+              const data = await response.json()
+              if (data.externalUserId) {
+                console.log("Using server-generated UUID:", data.externalUserId)
+                const newUuid = data.externalUserId
+                
+                // Set up a listener to add the session ID to other API calls
+                if (typeof window !== 'undefined') {
+                  const originalFetch = window.fetch;
+                  window.fetch = function(input, init = {}) {
+                    // Only add the header for our API calls
+                    if (typeof input === 'string' && input.startsWith('/api/')) {
+                      init.headers = init.headers || {};
+                      init.headers = {
+                        ...init.headers,
+                        'x-session-id': newUuid
+                      };
+                    }
+                    return originalFetch(input, init);
+                  };
+                }
+                
+                setExternalUserId(newUuid)
+                // Store in session storage so it persists during navigation
+                sessionStorage.setItem('pdExternalUserId', newUuid)
+                return
+              }
+            }
+          } catch (serverError) {
+            console.error("Error getting external user ID from server:", serverError)
+            // Continue to client-side fallback
+          }
           
           // As a last resort, generate a client-side UUID
           const fallbackId = generateClientUUID()

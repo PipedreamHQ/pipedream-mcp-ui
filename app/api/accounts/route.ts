@@ -55,28 +55,29 @@ async function getExternalUserId(req: NextRequest) {
     
     let externalUserId = null
     
-    // If we have a session ID header, prioritize that
+    // If we have a session ID header, prioritize that for backward compatibility
     if (sessionId) {
       externalUserId = sessionId
       if (debugMode) {
         console.log("Using session ID from header as external user ID:", externalUserId)
       }
     } 
-    // If we have a userId, generate a UUID based on it
+    // If we have a userId, get or create the UUID from Clerk metadata
     else if (userId) {
+      // This will get the UUID from Clerk metadata or create and store a new one
       externalUserId = await getPipedreamExternalUserId(userId)
       
       if (debugMode) {
-        console.log("Using Pipedream external user ID based on userId:", externalUserId)
+        console.log("Using Pipedream external user ID from Clerk metadata:", externalUserId)
       }
     } 
-    // No userId or session ID, generate a random UUID
+    // No userId or session ID, generate a random UUID as fallback
     else {
       const { randomUUID } = await import('crypto')
       externalUserId = randomUUID()
       
       if (debugMode) {
-        console.log("Using generated UUID as external user ID:", externalUserId)
+        console.log("Using generated UUID as fallback external user ID:", externalUserId)
       }
     }
     
