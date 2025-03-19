@@ -18,7 +18,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-outfit)"],
+        sans: ["var(--font-geist-sans)"],
       },
       colors: {
         border: "hsl(var(--border))",

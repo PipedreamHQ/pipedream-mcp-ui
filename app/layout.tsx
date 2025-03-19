@@ -1,17 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Outfit } from "next/font/google"
+import { GeistSans } from 'geist/font/sans'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
 import RedirectHandler from "@/components/redirect-handler"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
 
-// Use Outfit as our primary font - it's modern and clean
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-})
+// Use GeistSans as our primary font
 
 export const metadata: Metadata = {
   title: "MCP Servers from Pipedream",
@@ -58,8 +54,8 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${outfit.variable} font-sans`}>
+      <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
+        <body className="font-sans">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             <ClerkLoaded>
               <UserMetadataInitializer />
@@ -72,7 +68,3 @@ export default function RootLayout({
     </ClerkProvider>
   )
 }
-
-
-
-import './globals.css'
