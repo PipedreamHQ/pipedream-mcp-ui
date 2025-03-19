@@ -46,9 +46,39 @@ export async function GET(request: NextRequest) {
     // This is particularly important after a new user signs up
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Redirect to the original destination
-    // If no custom destination is found in cookies, redirect to the home page
-    return NextResponse.redirect(new URL('/', request.url))
+    // Redirect to the original destination from session storage
+    // We need to use a script tag to access localStorage/sessionStorage and perform the redirect
+    // since this is a server-side API route
+    return new NextResponse(
+      `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+          <title>Initializing...</title>
+        </head>
+        <body>
+          <script>
+            // Get the redirect URL from sessionStorage
+            const redirectUrl = sessionStorage.getItem('pdRedirectUrl') || '/';
+            console.log('Redirecting to:', redirectUrl);
+            
+            // Clear the stored redirect URL
+            sessionStorage.removeItem('pdRedirectUrl');
+            
+            // Redirect to the original destination
+            window.location.href = redirectUrl;
+          </script>
+          <p>Initializing your account... You will be redirected shortly.</p>
+        </body>
+      </html>
+      `,
+      {
+        headers: {
+          'Content-Type': 'text/html; charset=UTF-8',
+        },
+      }
+    )
   } catch (error) {
     console.error('[initialize-metadata] Error initializing metadata:', error)
     return NextResponse.redirect(new URL('/', request.url))
