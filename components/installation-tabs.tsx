@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, ExternalLink, Lock, Eye, EyeOff } from "lucide-react"
+import { Copy, Check, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import type { App } from "@/lib/supabase"
@@ -216,22 +216,28 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
 
     return (
       <div className="bg-muted rounded-md p-3 mt-4">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-xs text-muted-foreground">MCP server URL</p>
-          <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowUrl(!showUrl)}>
-              {showUrl ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyToClipboard}>
-              {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-            </Button>
+        <p className="text-sm text-muted-foreground mb-1">MCP server URL</p>
+        <div className="relative">
+          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-2 z-10">
+            <button 
+              className="text-muted-foreground hover:text-foreground focus:outline-none" 
+              onClick={() => setShowUrl(!showUrl)}
+            >
+              {showUrl ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </button>
+            <button 
+              className="text-muted-foreground hover:text-foreground focus:outline-none ml-2" 
+              onClick={copyToClipboard}
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
           </div>
+          <code className="text-xs font-mono bg-background p-1.5 pl-14 rounded border block w-full overflow-x-auto">
+            {displayUrl}
+          </code>
         </div>
-        <code className="text-xs font-mono bg-background p-1.5 rounded border block w-full overflow-x-auto">
-          {displayUrl}
-        </code>
-        <p className="text-xs text-muted-foreground mt-2">
-          <span className="text-amber-500">•</span> This URL is unique to your account and should be kept private.
+        <p className="text-sm text-muted-foreground mt-2">
+          <span className="text-amber-500">•</span> Do not share this URL with anyone. You should treat it like a sensitive token.
         </p>
       </div>
     )
@@ -341,17 +347,6 @@ def send_message():
             {!externalUserId && <div className="mt-4">{renderUrlSection()}</div>}
           </TabsContent>
         </Tabs>
-
-        {app.api_docs_url && (
-          <div className="mt-6">
-            <Button variant="outline" className="w-full" asChild>
-              <a href={app.api_docs_url} target="_blank" rel="noopener noreferrer">
-                View Documentation
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

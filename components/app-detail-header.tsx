@@ -1,5 +1,7 @@
 import Image from "next/image"
 import type { App } from "@/lib/supabase"
+import { BookOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface AppDetailHeaderProps {
   app: App
@@ -23,9 +25,22 @@ export default function AppDetailHeader({ app }: AppDetailHeaderProps) {
         />
       </div>
 
-      <div>
-        <h1 className="text-3xl font-bold">{app.name}</h1>
-        <p className="text-lg text-muted-foreground mt-2 max-w-3xl">{app.description}</p>
+      <div className="flex-grow">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">{app.name} MCP Server</h1>
+            <p className="text-lg text-muted-foreground mt-2 max-w-3xl">{app.description}</p>
+          </div>
+          
+          {app.api_docs_url && (
+            <Button variant="outline" size="sm" className="flex-shrink-0" asChild>
+              <a href={app.api_docs_url} target="_blank" rel="noopener noreferrer">
+                <BookOpen className="mr-2 h-4 w-4" />
+                View {app.name} docs
+              </a>
+            </Button>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-2 mt-4">
           {app.categories &&
