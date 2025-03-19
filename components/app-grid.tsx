@@ -5,7 +5,7 @@ import AppCard from "./app-card"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Info } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import type { App } from "@/lib/supabase"
 
 interface PageInfo {
@@ -89,6 +89,10 @@ export default function AppGrid() {
 
       // Update page info and data source
       setPageInfo(data.page_info)
+      // Only log to console if debug mode is true and using Pipedream API
+      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' && data.source === 'pipedream') {
+        console.log("Using Pipedream API because the Supabase database is empty.")
+      }
       setDataSource(data.source)
       setCurrentPage(page)
     } catch (error) {
@@ -159,16 +163,6 @@ export default function AppGrid() {
 
   return (
     <div>
-      {dataSource && dataSource === "pipedream" && (
-        <Alert className="mb-6">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Using Pipedream API</AlertTitle>
-          <AlertDescription>
-            The application is currently using data from the Pipedream API because the Supabase database is empty.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {apps.map((app) => (
           <AppCard key={app.id} app={app} />
