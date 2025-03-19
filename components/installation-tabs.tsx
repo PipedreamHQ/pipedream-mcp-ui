@@ -19,6 +19,11 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
 
   // Generate a unique MCP server URL for the signed-in user
   const mcpServerUrl = userId ? `https://mcp.pipedream.com/${userId}/${app.name_slug}` : null
+  
+  // Create an obfuscated version of the URL for display
+  const displayUrl = mcpServerUrl ? 
+    `https://mcp.pipedream.com/****/${app.name_slug}` : 
+    null
 
   const copyToClipboard = () => {
     if (!mcpServerUrl) return
@@ -60,13 +65,13 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
     return (
       <div className="bg-muted rounded-md p-3 mt-4">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs text-muted-foreground">MCP Server URL</p>
+          <p className="text-xs text-muted-foreground">MCP server URL</p>
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyToClipboard}>
             {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
           </Button>
         </div>
         <code className="text-xs font-mono bg-background p-1.5 rounded border block w-full overflow-x-auto">
-          {mcpServerUrl}
+          {displayUrl}
         </code>
       </div>
     )
@@ -76,35 +81,27 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Installation Steps</CardTitle>
-        <CardDescription>Choose your preferred platform to install the MCP Server</CardDescription>
+        <CardTitle>Getting started</CardTitle>
+        <CardDescription>Select your preferred client to install the MCP server</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="cursor">
           <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="cursor">Cursor</TabsTrigger>
-            <TabsTrigger value="claude">Claude</TabsTrigger>
-            <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
-            <TabsTrigger value="typescript">TypeScript</TabsTrigger>
-            <TabsTrigger value="python">Python</TabsTrigger>
+            <TabsTrigger value="claude" disabled className="opacity-60 cursor-not-allowed">Claude (Coming soon)</TabsTrigger>
+            <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed">Windsurf (Coming soon)</TabsTrigger>
+            <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed">TypeScript (Coming soon)</TabsTrigger>
+            <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed">Python (Coming soon)</TabsTrigger>
           </TabsList>
 
           <TabsContent value="cursor" className="space-y-4">
             <ol className="space-y-4 list-decimal list-inside">
-              <li>Open Settings → Cursor Settings</li>
-              <li>Click on "Features"</li>
-              <li>Add new MCP Server with this SSE URL:</li>
+              <li>Navigate to "Settings", then "Cursor Settings"</li>
+              <li>Select "MCP" on the left</li>
+              <li>Add a new MCP server by pasting the URL below:</li>
             </ol>
 
             {renderUrlSection()}
-
-            {userId && (
-              <div className="mt-4 p-3 bg-primary/10 rounded-md">
-                <p className="text-sm flex items-center">
-                  <span className="mr-2">🎉</span> Done! You can now use MCP features directly in Cursor
-                </p>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="claude" className="space-y-4">
@@ -112,7 +109,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <li>Open Claude AI</li>
               <li>Go to Settings → Advanced</li>
               <li>Enable "External Tools"</li>
-              <li>Add new MCP Server with this URL:</li>
+              <li>Add new MCP server with this URL:</li>
             </ol>
 
             {renderUrlSection()}
@@ -123,7 +120,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <li>Open Windsurf Browser</li>
               <li>Navigate to Extensions</li>
               <li>Enable "AI Tools"</li>
-              <li>Add new MCP Server with this URL:</li>
+              <li>Add new MCP server with this URL:</li>
             </ol>
 
             {renderUrlSection()}

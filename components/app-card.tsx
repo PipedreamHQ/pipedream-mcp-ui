@@ -2,13 +2,15 @@
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
 import type { App } from "@/lib/supabase"
 
 interface AppCardProps {
   app: App
+  disabled?: boolean
 }
 
-export default function AppCard({ app }: AppCardProps) {
+export default function AppCard({ app, disabled = false }: AppCardProps) {
   const router = useRouter()
 
   // Construct the correct image URL using app_hid
@@ -17,12 +19,17 @@ export default function AppCard({ app }: AppCardProps) {
     : `/placeholder.svg?height=48&width=48`
 
   const handleClick = () => {
-    router.push(`/app/${app.name_slug}`)
+    if (!disabled) {
+      router.push(`/app/${app.name_slug}`)
+    }
   }
 
   return (
     <Card
-      className="overflow-hidden transition-all duration-200 hover:shadow-md h-full border-border/60 cursor-pointer hover:scale-[1.01]"
+      className={`overflow-hidden transition-all duration-200 h-full border-border/60 
+        ${disabled 
+          ? 'opacity-70 cursor-not-allowed' 
+          : 'hover:shadow-md cursor-pointer hover:scale-[1.01]'}`}
       onClick={handleClick}
     >
       <CardContent className="p-6 h-full flex flex-col">
@@ -34,11 +41,17 @@ export default function AppCard({ app }: AppCardProps) {
               alt={`${app.name || "App"} logo`}
               width={40}
               height={40}
+              style={{ width: 'auto', height: 'auto', maxWidth: '40px', maxHeight: '40px' }}
               className="object-contain"
             />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{app.name || "Unknown App"}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold">{app.name || "Unknown app"}</h2>
+              {disabled && (
+                <Badge variant="outline" className="ml-1">Coming soon</Badge>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2 mt-1">
               {app.categories &&
                 app.categories.slice(0, 2).map((category, index) => (
@@ -65,4 +78,3 @@ export default function AppCard({ app }: AppCardProps) {
     </Card>
   )
 }
-

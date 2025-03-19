@@ -54,29 +54,21 @@ export default function AppGrid() {
 
       queryParams.set("page", page.toString())
 
-      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-        console.log("Fetching MCP servers with params:", queryParams.toString())
-      }
+      console.log("Fetching apps with params:", queryParams.toString())
 
       const response = await fetch(`/api/apps?${queryParams.toString()}`)
       const data = await response.json()
 
       if (!response.ok) {
-        if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-          console.error("API error response:", data)
-        }
+        console.error("API error response:", data)
         throw new Error(data.error || `API error: ${response.status}`)
       }
 
-      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-        console.log("API response:", data)
-      }
+      console.log("API response:", data)
 
       // Check if data has the expected structure
       if (!data.data || !Array.isArray(data.data)) {
-        if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-          console.error("Unexpected API response structure:", data)
-        }
+        console.error("Unexpected API response structure:", data)
         throw new Error("Unexpected API response structure")
       }
 
@@ -92,10 +84,8 @@ export default function AppGrid() {
       setDataSource(data.source)
       setCurrentPage(page)
     } catch (error) {
-      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-        console.error("Error fetching apps:", error)
-      }
-      setError("Failed to load MCP servers. Please try again later.")
+      console.error("Error fetching apps:", error)
+      setError("Failed to load apps. Please try again later.")
       setErrorDetails(error instanceof Error ? error.message : String(error))
     } finally {
       setLoading(false)
@@ -148,10 +138,10 @@ export default function AppGrid() {
       <div className="text-center py-16">
         <p className="text-muted-foreground">
           {categoryFilter
-            ? `No MCP servers found in the "${categoryFilter}" category${searchQuery ? ` matching "${searchQuery}"` : ""}.`
+            ? `No apps found in the "${categoryFilter}" category${searchQuery ? ` matching "${searchQuery}"` : ""}.`
             : searchQuery
-              ? `No MCP servers found matching "${searchQuery}".`
-              : "No MCP servers found."}
+              ? `No apps found matching "${searchQuery}".`
+              : "No apps found."}
         </p>
       </div>
     )
@@ -164,7 +154,7 @@ export default function AppGrid() {
           <Info className="h-4 w-4" />
           <AlertTitle>Using Pipedream API</AlertTitle>
           <AlertDescription>
-            The application is currently using data from the Pipedream API because the Supabase database is empty.
+            The app is currently using data from the Pipedream API because the Supabase database is empty.
           </AlertDescription>
         </Alert>
       )}

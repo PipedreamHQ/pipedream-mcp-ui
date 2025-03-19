@@ -4,6 +4,7 @@ import { Outfit } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClerkProvider } from "@clerk/nextjs"
+import RedirectHandler from "@/components/redirect-handler"
 
 // Use Outfit as our primary font - it's modern and clean
 const outfit = Outfit({
@@ -14,7 +15,30 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Pipedream MCP Servers Library",
   description: "Search and copy MCP server URLs for Pipedream integrations",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://mcp.pipedream.com/',
+    siteName: 'Pipedream MCP Servers',
+    title: 'Pipedream MCP Servers Library',
+    description: 'Search and copy MCP server URLs for Pipedream integrations',
+    images: [
+      {
+        url: 'https://res.cloudinary.com/pipedreamin/image/upload/v1688088928/mcp-servers-og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Pipedream MCP Servers Library',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pipedream MCP Servers Library',
+    description: 'Search and copy MCP server URLs for Pipedream integrations',
+    creator: '@pipedream',
+    images: ['https://res.cloudinary.com/pipedreamin/image/upload/v1688088928/mcp-servers-og.png'],
+  },
 }
 
 export default function RootLayout({
@@ -36,6 +60,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${outfit.variable} font-sans`}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <RedirectHandler />
             {children}
           </ThemeProvider>
         </body>
