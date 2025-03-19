@@ -5,21 +5,22 @@ import { useSearchParams } from "next/navigation"
 
 export default function Page() {
   const searchParams = useSearchParams()
-  let redirectUrl = searchParams.get("redirect_url") || "/"
+  let originalRedirectUrl = searchParams.get("redirect_url") || "/"
+  
+  // Always redirect to the initialize-metadata page first, which will then redirect to the original destination
+  let redirectUrl = "/api/initialize-metadata"
   
   // Debug the redirect URL
   if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-    console.log("Sign-up page: original redirect_url parameter =", redirectUrl)
+    console.log("Sign-up page: original redirect_url parameter =", originalRedirectUrl)
+    console.log("Sign-up page: redirecting first to =", redirectUrl)
   }
   
-  // Store the redirect URL in session storage to use it after sign-up
-  // This is a workaround for Clerk's redirect limitations
+  // Store the original redirect URL in session storage to use it after metadata initialization
   if (typeof window !== 'undefined') {
-    if (redirectUrl !== '/') {
-      window.sessionStorage.setItem('pdRedirectUrl', redirectUrl)
-      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-        console.log("Sign-up page: stored redirect URL in session storage:", redirectUrl)
-      }
+    window.sessionStorage.setItem('pdRedirectUrl', originalRedirectUrl)
+    if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+      console.log("Sign-up page: stored original redirect URL in session storage:", originalRedirectUrl)
     }
   }
   

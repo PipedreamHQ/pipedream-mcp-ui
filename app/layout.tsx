@@ -3,8 +3,9 @@ import type { Metadata } from "next"
 import { Outfit } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ClerkProvider } from "@clerk/nextjs"
+import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
 import RedirectHandler from "@/components/redirect-handler"
+import UserMetadataInitializer from "@/components/user-metadata-initializer"
 
 // Use Outfit as our primary font - it's modern and clean
 const outfit = Outfit({
@@ -60,6 +61,9 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${outfit.variable} font-sans`}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <ClerkLoaded>
+              <UserMetadataInitializer />
+            </ClerkLoaded>
             <RedirectHandler />
             {children}
           </ThemeProvider>

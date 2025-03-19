@@ -139,6 +139,29 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           
           // As a last resort, generate a client-side UUID
           const fallbackId = generateClientUUID()
+          console.log("Generated client-side UUID:", fallbackId)
+          
+          // Store the fallback ID in Clerk metadata for persistence
+          try {
+            const metadataResponse = await fetch('/api/user-metadata', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                pd_external_user_id: fallbackId
+              }),
+            })
+            
+            if (metadataResponse.ok) {
+              console.log("Successfully persisted client-generated UUID to Clerk metadata")
+            } else {
+              console.error("Failed to persist client-generated UUID to Clerk metadata:", await metadataResponse.text())
+            }
+          } catch (persistError) {
+            console.error("Error persisting client-generated UUID to Clerk metadata:", persistError)
+          }
+          
           setExternalUserId(fallbackId)
           // Store it in session storage for consistency
           sessionStorage.setItem('pdExternalUserId', fallbackId)
