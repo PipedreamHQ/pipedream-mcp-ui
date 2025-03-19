@@ -6,7 +6,7 @@ import { getAuth } from "@clerk/nextjs/server"
 const getPipedreamClient = () => {
   return createBackendClient({
     apiHost: process.env.API_HOST,
-    environment: process.env.ENVIRONMENT,
+    environment: process.env.ENVIRONMENT || "development",
     credentials: {
       clientId: process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID || "",
       clientSecret: process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET || "",
@@ -20,13 +20,17 @@ async function getUserId(req: NextRequest) {
   try {
     // Get the full auth object for debugging
     const auth = getAuth(req)
-    console.log("Retrieved Clerk auth object:", JSON.stringify(auth, null, 2))
-    
     const { userId } = auth
-    console.log("Retrieved Clerk userId:", userId)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
-    // Only log headers for debugging in development environment
-    if (process.env.ENVIRONMENT === "development") {
+    // Only log in debug mode
+    if (debugMode) {
+      console.log("Retrieved Clerk auth object:", JSON.stringify(auth, null, 2))
+      console.log("Retrieved Clerk userId:", userId)
+    }
+    
+    // Only log headers for debugging in debug mode
+    if (debugMode) {
       const headers = {}
       req.headers.forEach((value, key) => {
         if (!key.toLowerCase().includes('cookie') && !key.toLowerCase().includes('auth')) {
@@ -38,7 +42,10 @@ async function getUserId(req: NextRequest) {
     
     return userId
   } catch (error) {
-    console.error("Error getting user ID:", error)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
+    if (debugMode) {
+      console.error("Error getting user ID:", error)
+    }
     // For demo purposes, return a placeholder user ID
     return "demo-user-id"
   }
@@ -49,10 +56,13 @@ export async function GET(request: NextRequest) {
   try {
     // Get current user ID from auth
     const userId = await getUserId(request)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
     // If no userId is available, return mock data
     if (!userId) {
-      console.warn("No user ID available from auth, returning mock data")
+      if (debugMode) {
+        console.warn("No user ID available from auth, returning mock data")
+      }
       return NextResponse.json({
         data: {
           accounts: [
@@ -76,11 +86,13 @@ export async function GET(request: NextRequest) {
     
     // Check environment variables before proceeding
     if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET || !process.env.PROJECT_ID) {
-      console.error("Missing required Pipedream credentials in environment variables:", {
-        hasClientId: !!process.env.OAUTH_CLIENT_ID,
-        hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-        hasProjectId: !!process.env.PROJECT_ID
-      })
+      if (debugMode) {
+        console.error("Missing required Pipedream credentials in environment variables:", {
+          hasClientId: !!process.env.OAUTH_CLIENT_ID,
+          hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
+          hasProjectId: !!process.env.PROJECT_ID
+        })
+      }
       
       // For demo purposes, return mock data
       return NextResponse.json({
@@ -121,12 +133,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
 
     // Log credentials being used (exclude sensitive values)
-    console.log("Using Pipedream client with:", {
-      environment: process.env.ENVIRONMENT || "development",
-      hasClientId: !!process.env.OAUTH_CLIENT_ID,
-      hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-      projectId: process.env.PROJECT_ID,
-    })
+    if (debugMode) {
+      console.log("Using Pipedream client with:", {
+        environment: process.env.ENVIRONMENT || "development",
+        hasClientId: !!process.env.OAUTH_CLIENT_ID,
+        hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
+        projectId: process.env.PROJECT_ID,
+      })
+    }
     
     // Hard-code the user ID that you confirmed works
     // Remove or modify this once we understand the Clerk auth issue
@@ -134,17 +148,24 @@ export async function GET(request: NextRequest) {
     
     // Prioritize the hardcoded ID for now, then fall back to environment variable or Clerk userId
     const externalUserId = hardcodedUserId || process.env.EXTERNAL_USER_ID || userId;
-    console.log(`Fetching accounts with external_user_id: ${externalUserId} (Clerk userId: ${userId}, ENV EXTERNAL_USER_ID: ${process.env.EXTERNAL_USER_ID || 'not set'})`)
+    if (debugMode) {
+      console.log(`Fetching accounts with external_user_id: ${externalUserId} (Clerk userId: ${userId}, ENV EXTERNAL_USER_ID: ${process.env.EXTERNAL_USER_ID || 'not set'})`)
+    }
     
     const accounts = await pd.getAccounts({
       external_user_id: externalUserId,
       app: searchParams.get("app") || undefined,
     })
     
-    console.log(`Successfully fetched accounts:`, accounts)
+    if (debugMode) {
+      console.log(`Successfully fetched accounts:`, accounts)
+    }
     return NextResponse.json(accounts)
   } catch (error) {
-    console.error("Error fetching accounts:", error)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
+    if (debugMode) {
+      console.error("Error fetching accounts:", error)
+    }
     
     // For demo purposes, return mock data
     return NextResponse.json({
@@ -174,10 +195,13 @@ export async function DELETE(request: NextRequest) {
   try {
     // Get current user ID from auth
     const userId = await getUserId(request)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
     // If no userId is available, simulate success
     if (!userId) {
-      console.warn("No user ID available from auth, simulating successful deletion")
+      if (debugMode) {
+        console.warn("No user ID available from auth, simulating successful deletion")
+      }
       return NextResponse.json(
         { success: true, message: "Account deletion simulated (no auth)" },
         { status: 200 }
@@ -196,7 +220,9 @@ export async function DELETE(request: NextRequest) {
     
     // Check if it's a mock account
     if (accountId.startsWith("mock-account-")) {
-      console.log(`Simulating deletion of mock account ${accountId}`)
+      if (debugMode) {
+        console.log(`Simulating deletion of mock account ${accountId}`)
+      }
       return NextResponse.json(
         { success: true, message: "Mock account deleted successfully" },
         { status: 200 }
@@ -205,11 +231,13 @@ export async function DELETE(request: NextRequest) {
     
     // Check environment variables before proceeding
     if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET || !process.env.PROJECT_ID) {
-      console.error("Missing required Pipedream credentials in environment variables:", {
-        hasClientId: !!process.env.OAUTH_CLIENT_ID,
-        hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-        hasProjectId: !!process.env.PROJECT_ID
-      })
+      if (debugMode) {
+        console.error("Missing required Pipedream credentials in environment variables:", {
+          hasClientId: !!process.env.OAUTH_CLIENT_ID,
+          hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
+          hasProjectId: !!process.env.PROJECT_ID
+        })
+      }
       return NextResponse.json(
         { success: true, message: "Account deletion simulated (missing credentials)" },
         { status: 200 }
@@ -222,18 +250,25 @@ export async function DELETE(request: NextRequest) {
     const externalUserId = process.env.EXTERNAL_USER_ID || userId;
     
     // Log operation
-    console.log(`Deleting account ${accountId} for external user ${externalUserId} (Clerk userId: ${userId})`)
+    if (debugMode) {
+      console.log(`Deleting account ${accountId} for external user ${externalUserId} (Clerk userId: ${userId})`)
+    }
     
     // Delete the account
     await pd.deleteAccount(accountId)
     
-    console.log(`Successfully deleted account ${accountId}`)
+    if (debugMode) {
+      console.log(`Successfully deleted account ${accountId}`)
+    }
     return NextResponse.json(
       { success: true, message: "Account deleted successfully" },
       { status: 200 }
     )
   } catch (error) {
-    console.error("Error deleting account:", error)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
+    if (debugMode) {
+      console.error("Error deleting account:", error)
+    }
     return NextResponse.json(
       { error: "Failed to delete account", details: String(error) },
       { status: 500 }

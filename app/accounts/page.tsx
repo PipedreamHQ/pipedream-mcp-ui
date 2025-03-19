@@ -30,6 +30,7 @@ export default function AccountsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const { isLoaded, userId } = useAuth()
   const router = useRouter()
+  const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
 
   const fetchAccounts = async () => {
     setLoading(true)
@@ -37,40 +38,58 @@ export default function AccountsPage() {
       // First check if our environment variables are correctly configured
       const envCheck = await fetch("/api/check-env")
       const envData = await envCheck.json()
-      console.log("Environment check:", envData)
       
-      // Log current user information from Clerk's client-side hooks
-      console.log("Current user from Clerk client:", { 
-        userId, 
-        isLoaded,
-        isSignedIn: userId !== null && isLoaded
-      })
+      // Only log in debug mode
+      if (debugMode) {
+        console.log("Environment check:", envData)
+        
+        // Log current user information from Clerk's client-side hooks
+        console.log("Current user from Clerk client:", { 
+          userId, 
+          isLoaded,
+          isSignedIn: userId !== null && isLoaded
+        })
+      }
       
       const response = await fetch("/api/accounts")
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("API Response error:", errorText)
+        if (debugMode) {
+          console.error("API Response error:", errorText)
+        }
         throw new Error(`Failed to fetch accounts: ${response.status} ${response.statusText}`)
       }
       
       const data = await response.json()
-      console.log("Accounts API response (full):", JSON.stringify(data, null, 2))
+      
+      // Only log in debug mode
+      if (debugMode) {
+        console.log("Accounts API response (full):", JSON.stringify(data, null, 2))
+      }
       
       // Handle either data structure:
       // data.data.accounts (from your example)
       // OR data.data (from Pipedream API response)
       if (data.data?.accounts) {
-        console.log("Using data.data.accounts structure")
+        if (debugMode) {
+          console.log("Using data.data.accounts structure")
+        }
         setAccounts(data.data.accounts)
       } else if (Array.isArray(data.data)) {
-        console.log("Using data.data array structure")
+        if (debugMode) {
+          console.log("Using data.data array structure")
+        }
         setAccounts(data.data)
       } else {
-        console.log("No accounts found in response, using empty array")
+        if (debugMode) {
+          console.log("No accounts found in response, using empty array")
+        }
         setAccounts([])
       }
     } catch (error) {
-      console.error("Error fetching accounts:", error)
+      if (debugMode) {
+        console.error("Error fetching accounts:", error)
+      }
       toast({
         title: "Error",
         description: "Failed to load connected accounts. Check console for details.",
@@ -100,7 +119,9 @@ export default function AccountsPage() {
       // Remove the deleted account from the list
       setAccounts(accounts.filter(account => account.id !== accountId))
     } catch (error) {
-      console.error("Error deleting account:", error)
+      if (debugMode) {
+        console.error("Error deleting account:", error)
+      }
       toast({
         title: "Error",
         description: "Failed to disconnect account",
@@ -148,25 +169,32 @@ export default function AccountsPage() {
     )
   }
 
-  // Helper function to test Pipedream API directly - only shown in development
+  // Helper function to test Pipedream API directly - only shown in debug mode
   const testPipedreamApi = async () => {
     try {
       // First test connection through the check-env endpoint
       const response = await fetch(`/api/check-env?includePipedreamTest=true`)
       const data = await response.json()
-      console.log("Pipedream API test result:", data)
       
-      // Log current user info from client side
-      console.log("Current user info from client:", {
-        clerkUserId: userId,
-        externalUserId: data.pipedream?.externalUserId ? "Set in ENV" : "Using Clerk ID"
-      })
+      if (debugMode) {
+        console.log("Pipedream API test result:", data)
+        
+        // Log current user info from client side
+        console.log("Current user info from client:", {
+          clerkUserId: userId,
+          externalUserId: data.pipedream?.externalUserId ? "Set in ENV" : "Using Clerk ID"
+        })
+        
+        // Then try the accounts endpoint explicitly
+        console.log("Testing accounts endpoint directly...")
+      }
       
-      // Then try the accounts endpoint explicitly
-      console.log("Testing accounts endpoint directly...")
       const accountsResponse = await fetch("/api/accounts")
       const accountsData = await accountsResponse.json()
-      console.log("Direct accounts API response:", accountsData)
+      
+      if (debugMode) {
+        console.log("Direct accounts API response:", accountsData)
+      }
       
       // Display count of accounts found
       const accountsCount = accountsData?.data?.accounts?.length || 
@@ -178,7 +206,9 @@ export default function AccountsPage() {
         variant: data.pipedreamTest?.success ? "default" : "destructive",
       })
     } catch (error) {
-      console.error("Error testing Pipedream API:", error)
+      if (debugMode) {
+        console.error("Error testing Pipedream API:", error)
+      }
       toast({
         title: "Error", 
         description: "Failed to test Pipedream API. Check console for details.",
@@ -192,7 +222,7 @@ export default function AccountsPage() {
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-3xl font-bold">Connected accounts</h1>
         <div className="flex gap-2">
-          {process.env.NODE_ENV === "development" && (
+          {debugMode && (
             <Button variant="secondary" onClick={testPipedreamApi}>
               Test API
             </Button>

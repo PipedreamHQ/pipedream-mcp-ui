@@ -5,10 +5,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const includePipedreamTest = searchParams.get("includePipedreamTest") === "true"
-    const environment = process.env.ENVIRONMENT || "development"
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
     
-    // Only return detailed environment status in development mode
-    if (environment === "development") {
+    // Only return detailed environment status in debug mode
+    if (debugMode) {
       // Check if all the required environment variables are set
       const envStatus = {
         clerk: {
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
           anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         },
         pipedream: {
-          environment: environment,
+          debug_mode: debugMode,
+          environment: process.env.ENVIRONMENT || "development",
           apiHost: !!process.env.API_HOST,
           oauthClientId: !!process.env.OAUTH_CLIENT_ID,
           clientId: !!process.env.CLIENT_ID,
@@ -39,11 +40,13 @@ export async function GET(request: NextRequest) {
       
       if (hasClientId && hasClientSecret && process.env.PROJECT_ID) {
         try {
-          console.log("Testing Pipedream API connectivity...")
+          if (debugMode) {
+            console.log("Testing Pipedream API connectivity...")
+          }
           
           const pd = createBackendClient({
             apiHost: process.env.API_HOST,
-            environment: process.env.ENVIRONMENT || "development",
+            environment: process.env.ENVIRONMENT || "development", // Keep this for the API
             credentials: {
               clientId: process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID,
               clientSecret: process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET,
@@ -65,7 +68,9 @@ export async function GET(request: NextRequest) {
             }
           })
         } catch (pipedreamError) {
-          console.error("Pipedream API test failed:", pipedreamError)
+          if (debugMode) {
+            console.error("Pipedream API test failed:", pipedreamError)
+          }
           return NextResponse.json({
             ...envStatus,
             pipedreamTest: {
@@ -95,12 +100,15 @@ export async function GET(request: NextRequest) {
     }
     }
 
-    // For non-development environments, just return minimal status
+    // For non-debug environments, just return minimal status
     return NextResponse.json({
-      environment: environment
+      debug_mode: debugMode
     })
   } catch (error) {
-    console.error("Error checking environment:", error)
+    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
+    if (debugMode) {
+      console.error("Error checking environment:", error)
+    }
     return NextResponse.json(
       { error: "Failed to check environment variables", details: String(error) },
       { status: 500 }
