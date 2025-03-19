@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { toast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
+import { MainNav } from "@/components/main-nav"
 
 interface Account {
   id: string
@@ -133,38 +134,36 @@ export default function AccountsPage() {
   }
 
   useEffect(() => {
-    if (isLoaded && !userId) {
-      // If user is not logged in, redirect to sign in
-      router.push("/sign-in?redirect_url=/accounts")
-      return
-    }
-    
     if (isLoaded && userId) {
+      // Only fetch accounts if user is authenticated
       fetchAccounts()
     }
-  }, [isLoaded, userId, router])
+  }, [isLoaded, userId])
   
-  if (!isLoaded || !userId) {
+  // Show loading state while clerk auth is loading
+  if (!isLoaded) {
     return (
-      <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-8">Connected Accounts</h1>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-1/2 mb-2" />
-                <Skeleton className="h-4 w-3/4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-1/3 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-              <CardFooter>
-                <Skeleton className="h-10 w-full" />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <main className="container mx-auto px-4 py-12">
+          <MainNav />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
+            {[1, 2, 3].map(i => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-1/3 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </CardContent>
+                <CardFooter>
+                  <Skeleton className="h-10 w-full" />
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </main>
       </div>
     )
   }
@@ -217,101 +216,126 @@ export default function AccountsPage() {
     }
   }
 
-  return (
-    <div className="container py-10">
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-bold">Connected accounts</h1>
-        <div className="flex gap-2">
-          {debugMode && (
-            <Button variant="secondary" onClick={testPipedreamApi}>
-              Test API
-            </Button>
-          )}
-          <Button variant="outline" onClick={() => router.push("/")}>
-            Back to MCP servers
+  // Create the unauthenticated state content
+  const unauthenticatedContent = (
+    <Card className="mt-8">
+      <CardContent className="pt-6">
+        <div className="text-center py-10">
+          <h3 className="text-lg font-medium mb-2">Sign in to manage connected accounts</h3>
+          <p className="text-muted-foreground mb-4">
+            You need to sign in to view and manage your connected accounts.
+          </p>
+          <Button onClick={() => router.push("/sign-in?redirect_url=/accounts")}>
+            Sign In
           </Button>
         </div>
-      </div>
-      
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-1/2 mb-2" />
-                <Skeleton className="h-4 w-3/4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-1/3 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-              <CardFooter>
-                <Skeleton className="h-10 w-full" />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      ) : accounts.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-10">
-              <h3 className="text-lg font-medium mb-2">No connected accounts</h3>
-              <p className="text-muted-foreground mb-4">
-                You haven't connected any accounts yet.
-              </p>
-              <Button onClick={() => router.push("/")}>
-                Browse MCP servers
-              </Button>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <main className="container mx-auto px-4 py-12">
+        <MainNav />
+        
+        {/* If not authenticated, show sign in prompt */}
+        {!userId ? (
+          unauthenticatedContent
+        ) : (
+          <>
+            <div className="flex justify-between items-center mt-8 mb-6">
+              <h2 className="text-2xl font-bold">Connected accounts</h2>
+              <div className="flex gap-2">
+                {debugMode && (
+                  <Button variant="secondary" onClick={testPipedreamApi}>
+                    Test API
+                  </Button>
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {accounts.map((account) => (
-            <Card key={account.id}>
-              <CardHeader>
-                <CardTitle>{account.app.name}</CardTitle>
-                <CardDescription>
-                  {account.name && `Account: ${account.name}`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant={account.healthy ? "default" : "destructive"}>
-                    {account.healthy ? "Connected" : "Connection Issue"}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Connected: {new Date(account.created_at).toLocaleDateString()}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full" disabled={deletingId === account.id}>
-                      {deletingId === account.id ? "Disconnecting..." : "Disconnect"}
+            
+            {loading ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map(i => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-1/2 mb-2" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-4 w-1/3 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardContent>
+                    <CardFooter>
+                      <Skeleton className="h-10 w-full" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : accounts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-10">
+                    <h3 className="text-lg font-medium mb-2">No connected accounts</h3>
+                    <p className="text-muted-foreground mb-4">
+                      You haven't connected any accounts yet.
+                    </p>
+                    <Button onClick={() => router.push("/")}>
+                      Browse MCP servers
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Disconnect {account.app.name}?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will remove your connection to {account.app.name} and any automated workflows that depend on this connection may stop working.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteAccount(account.id)}>
-                        Disconnect
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {accounts.map((account) => (
+                  <Card key={account.id}>
+                    <CardHeader>
+                      <CardTitle>{account.app.name}</CardTitle>
+                      <CardDescription>
+                        {account.name && `Account: ${account.name}`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant={account.healthy ? "default" : "destructive"}>
+                          {account.healthy ? "Connected" : "Connection Issue"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Connected: {new Date(account.created_at).toLocaleDateString()}
+                      </p>
+                    </CardContent>
+                    <CardFooter>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" className="w-full" disabled={deletingId === account.id}>
+                            {deletingId === account.id ? "Disconnecting..." : "Disconnect"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Disconnect {account.app.name}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will remove your connection to {account.app.name} and any automated workflows that depend on this connection may stop working.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteAccount(account.id)}>
+                              Disconnect
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
     </div>
   )
 }

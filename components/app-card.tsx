@@ -41,6 +41,7 @@ export default function AppCard({ app, disabled = false }: AppCardProps) {
               alt={`${app.name || "App"} logo`}
               width={40}
               height={40}
+              style={{ width: 'auto', height: 'auto', maxWidth: '40px', maxHeight: '40px' }}
               className="object-contain"
             />
           </div>

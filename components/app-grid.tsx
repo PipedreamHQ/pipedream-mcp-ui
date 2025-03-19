@@ -54,21 +54,29 @@ export default function AppGrid() {
 
       queryParams.set("page", page.toString())
 
-      console.log("Fetching MCP servers with params:", queryParams.toString())
+      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+        console.log("Fetching MCP servers with params:", queryParams.toString())
+      }
 
       const response = await fetch(`/api/apps?${queryParams.toString()}`)
       const data = await response.json()
 
       if (!response.ok) {
-        console.error("API error response:", data)
+        if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+          console.error("API error response:", data)
+        }
         throw new Error(data.error || `API error: ${response.status}`)
       }
 
-      console.log("API response:", data)
+      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+        console.log("API response:", data)
+      }
 
       // Check if data has the expected structure
       if (!data.data || !Array.isArray(data.data)) {
-        console.error("Unexpected API response structure:", data)
+        if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+          console.error("Unexpected API response structure:", data)
+        }
         throw new Error("Unexpected API response structure")
       }
 
@@ -84,7 +92,9 @@ export default function AppGrid() {
       setDataSource(data.source)
       setCurrentPage(page)
     } catch (error) {
-      console.error("Error fetching apps:", error)
+      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+        console.error("Error fetching apps:", error)
+      }
       setError("Failed to load MCP servers. Please try again later.")
       setErrorDetails(error instanceof Error ? error.message : String(error))
     } finally {
@@ -163,56 +173,6 @@ export default function AppGrid() {
         {apps.map((app) => (
           <AppCard key={app.id} app={app} />
         ))}
-        
-        {/* Add hardcoded "Coming soon" cards */}
-        <AppCard 
-          app={{
-            id: "coming-soon-claude",
-            name: "Claude",
-            name_slug: "claude", 
-            description: "Claude is a powerful AI assistant built by Anthropic. Coming soon to our MCP server platform.",
-            categories: ["AI"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-windsurf",
-            name: "Windsurf",
-            name_slug: "windsurf", 
-            description: "Windsurf browser integration with MCP servers is coming soon.",
-            categories: ["Browser", "Productivity"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-typescript",
-            name: "TypeScript",
-            name_slug: "typescript", 
-            description: "Use MCP servers directly from your TypeScript applications.",
-            categories: ["Development"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
-        <AppCard 
-          app={{
-            id: "coming-soon-python",
-            name: "Python",
-            name_slug: "python", 
-            description: "Python SDK for interacting with MCP servers is coming soon.",
-            categories: ["Development"],
-            app_hid: null,
-            featured_weight: 0,
-          }} 
-          disabled={true} 
-        />
       </div>
 
       {pageInfo?.has_more && (

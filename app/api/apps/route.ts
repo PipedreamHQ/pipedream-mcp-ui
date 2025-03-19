@@ -139,19 +139,19 @@ export async function GET(request: Request) {
   try {
     console.log("Fetching from Pipedream API...")
     console.log("Environment check:", {
-      environment: process.env.environment,
-      hasClientId: !!process.env.oauth_client_id,
-      hasClientSecret: !!process.env.oauth_client_secret,
-      hasProjectId: !!process.env.project_id
+      environment: process.env.PIPEDREAM_ENVIRONMENT,
+      hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
+      hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
+      hasProjectId: !!process.env.PIPEDREAM_PROJECT_ID
     })
 
     const pd = createBackendClient({
-      environment: "development", // Hardcode to development for now
+      environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
       credentials: {
-        clientId: process.env.oauth_client_id || "",
-        clientSecret: process.env.oauth_client_secret || "",
+        clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || "",
+        clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || "",
       },
-      projectId: process.env.project_id || "",
+      projectId: process.env.PIPEDREAM_PROJECT_ID || "",
     })
 
     const options: any = {}

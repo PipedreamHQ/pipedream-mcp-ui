@@ -5,13 +5,13 @@ import { getAuth } from "@clerk/nextjs/server"
 // Initialize Pipedream client
 const getPipedreamClient = () => {
   return createBackendClient({
-    apiHost: process.env.API_HOST,
-    environment: process.env.ENVIRONMENT || "development",
+    apiHost: process.env.PIPEDREAM_API_HOST,
+    environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
     credentials: {
-      clientId: process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID || "",
-      clientSecret: process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET || "",
+      clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || process.env.CLIENT_ID || "",
+      clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET || "",
     },
-    projectId: process.env.PROJECT_ID || "",
+    projectId: process.env.PIPEDREAM_PROJECT_ID || "",
   })
 }
 
@@ -85,12 +85,12 @@ export async function GET(request: NextRequest) {
     }
     
     // Check environment variables before proceeding
-    if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET || !process.env.PROJECT_ID) {
+    if (!process.env.PIPEDREAM_OAUTH_CLIENT_ID || !process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || !process.env.PIPEDREAM_PROJECT_ID) {
       if (debugMode) {
         console.error("Missing required Pipedream credentials in environment variables:", {
-          hasClientId: !!process.env.OAUTH_CLIENT_ID,
-          hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-          hasProjectId: !!process.env.PROJECT_ID
+          hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
+          hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
+          hasProjectId: !!process.env.PIPEDREAM_PROJECT_ID
         })
       }
       
@@ -135,10 +135,10 @@ export async function GET(request: NextRequest) {
     // Log credentials being used (exclude sensitive values)
     if (debugMode) {
       console.log("Using Pipedream client with:", {
-        environment: process.env.ENVIRONMENT || "development",
-        hasClientId: !!process.env.OAUTH_CLIENT_ID,
-        hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-        projectId: process.env.PROJECT_ID,
+        environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+        hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
+        hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
+        projectId: process.env.PIPEDREAM_PROJECT_ID,
       })
     }
     
@@ -147,9 +147,9 @@ export async function GET(request: NextRequest) {
     const hardcodedUserId = "user_2uSmv3Nks06I6kEDYnJb2Tk0Wzg";
     
     // Prioritize the hardcoded ID for now, then fall back to environment variable or Clerk userId
-    const externalUserId = hardcodedUserId || process.env.EXTERNAL_USER_ID || userId;
+    const externalUserId = hardcodedUserId || process.env.PIPEDREAM_EXTERNAL_USER_ID || userId;
     if (debugMode) {
-      console.log(`Fetching accounts with external_user_id: ${externalUserId} (Clerk userId: ${userId}, ENV EXTERNAL_USER_ID: ${process.env.EXTERNAL_USER_ID || 'not set'})`)
+      console.log(`Fetching accounts with external_user_id: ${externalUserId} (Clerk userId: ${userId}, ENV EXTERNAL_USER_ID: ${process.env.PIPEDREAM_EXTERNAL_USER_ID || 'not set'})`)
     }
     
     const accounts = await pd.getAccounts({
@@ -230,12 +230,12 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Check environment variables before proceeding
-    if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET || !process.env.PROJECT_ID) {
+    if (!process.env.PIPEDREAM_OAUTH_CLIENT_ID || !process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || !process.env.PIPEDREAM_PROJECT_ID) {
       if (debugMode) {
         console.error("Missing required Pipedream credentials in environment variables:", {
-          hasClientId: !!process.env.OAUTH_CLIENT_ID,
-          hasClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
-          hasProjectId: !!process.env.PROJECT_ID
+          hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
+          hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
+          hasProjectId: !!process.env.PIPEDREAM_PROJECT_ID
         })
       }
       return NextResponse.json(
@@ -246,8 +246,8 @@ export async function DELETE(request: NextRequest) {
     
     const pd = getPipedreamClient()
     
-    // Use the EXTERNAL_USER_ID environment variable if available, otherwise use the Clerk userId
-    const externalUserId = process.env.EXTERNAL_USER_ID || userId;
+    // Use the PIPEDREAM_EXTERNAL_USER_ID environment variable if available, otherwise use the Clerk userId
+    const externalUserId = process.env.PIPEDREAM_EXTERNAL_USER_ID || userId;
     
     // Log operation
     if (debugMode) {

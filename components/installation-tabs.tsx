@@ -81,8 +81,8 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Installation steps</CardTitle>
-        <CardDescription>Choose your preferred platform to install the MCP server</CardDescription>
+        <CardTitle>Getting started</CardTitle>
+        <CardDescription>Select your preferred client to install the MCP server</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="cursor">
@@ -96,20 +96,12 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
 
           <TabsContent value="cursor" className="space-y-4">
             <ol className="space-y-4 list-decimal list-inside">
-              <li>Open Settings → Cursor Settings</li>
-              <li>Click on "Features"</li>
-              <li>Add new MCP server with this SSE URL:</li>
+              <li>Navigate to "Settings", then "Cursor Settings"</li>
+              <li>Select "MCP" on the left</li>
+              <li>Add a new MCP server by pasting the URL below:</li>
             </ol>
 
             {renderUrlSection()}
-
-            {userId && (
-              <div className="mt-4 p-3 bg-primary/10 rounded-md">
-                <p className="text-sm flex items-center">
-                  <span className="mr-2">🎉</span> Done! You can now use MCP features directly in Cursor
-                </p>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="claude" className="space-y-4">

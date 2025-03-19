@@ -27,12 +27,12 @@ export async function GET() {
     console.log("No categories found in Supabase, falling back to Pipedream API")
 
     const pd = createBackendClient({
-      environment: process.env.environment || "development",
+      environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
       credentials: {
-        clientId: process.env.oauth_client_id || "",
-        clientSecret: process.env.oauth_client_secret || "",
+        clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || "",
+        clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || "",
       },
-      projectId: process.env.project_id || "",
+      projectId: process.env.PIPEDREAM_PROJECT_ID || "",
     })
 
     const resp = await pd.getApps({ limit: 100 })

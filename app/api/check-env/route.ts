@@ -21,37 +21,37 @@ export async function GET(request: NextRequest) {
         },
         pipedream: {
           debug_mode: debugMode,
-          environment: process.env.ENVIRONMENT || "development",
-          apiHost: !!process.env.API_HOST,
-          oauthClientId: !!process.env.OAUTH_CLIENT_ID,
+          environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+          apiHost: !!process.env.PIPEDREAM_API_HOST,
+          oauthClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
           clientId: !!process.env.CLIENT_ID,
-          oauthClientSecret: !!process.env.OAUTH_CLIENT_SECRET,
+          oauthClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET, 
           clientSecret: !!process.env.CLIENT_SECRET,
-          projectId: !!process.env.PROJECT_ID,
-          externalUserId: !!process.env.EXTERNAL_USER_ID,
+          projectId: !!process.env.PIPEDREAM_PROJECT_ID,
+          externalUserId: !!process.env.PIPEDREAM_EXTERNAL_USER_ID,
         },
         nodeEnv: process.env.NODE_ENV,
       }
       
       // If requested, test Pipedream API connectivity
       if (includePipedreamTest) {
-      const hasClientId = process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID
-      const hasClientSecret = process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET
+      const hasClientId = process.env.PIPEDREAM_OAUTH_CLIENT_ID || process.env.CLIENT_ID
+      const hasClientSecret = process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET
       
-      if (hasClientId && hasClientSecret && process.env.PROJECT_ID) {
+      if (hasClientId && hasClientSecret && process.env.PIPEDREAM_PROJECT_ID) {
         try {
           if (debugMode) {
             console.log("Testing Pipedream API connectivity...")
           }
           
           const pd = createBackendClient({
-            apiHost: process.env.API_HOST,
-            environment: process.env.ENVIRONMENT || "development", // Keep this for the API
+            apiHost: process.env.PIPEDREAM_API_HOST,
+            environment: process.env.PIPEDREAM_ENVIRONMENT || "development", // Keep this for the API
             credentials: {
-              clientId: process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID,
-              clientSecret: process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET,
+              clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || process.env.CLIENT_ID,
+              clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET,
             },
-            projectId: process.env.PROJECT_ID,
+            projectId: process.env.PIPEDREAM_PROJECT_ID,
           })
           
           // Just try to list apps as a simple API test
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
               success: true,
               message: "Successfully connected to Pipedream API",
               appCount: result.data?.length || 0,
-              actualExternalUserId: process.env.EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+              actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using Clerk userId as fallback"
             }
           })
         } catch (pipedreamError) {
@@ -87,13 +87,13 @@ export async function GET(request: NextRequest) {
             success: false,
             message: "Missing Pipedream credentials",
             missingCredentials: {
-              clientId: !(process.env.OAUTH_CLIENT_ID || process.env.CLIENT_ID),
-              clientSecret: !(process.env.OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET),
-              apiHost: !process.env.API_HOST,
-              projectId: !process.env.PROJECT_ID,
-              externalUserId: !process.env.EXTERNAL_USER_ID
+              clientId: !(process.env.PIPEDREAM_OAUTH_CLIENT_ID || process.env.CLIENT_ID),
+              clientSecret: !(process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET),
+              apiHost: !process.env.PIPEDREAM_API_HOST,
+              projectId: !process.env.PIPEDREAM_PROJECT_ID,
+              externalUserId: !process.env.PIPEDREAM_EXTERNAL_USER_ID
             },
-            actualExternalUserId: process.env.EXTERNAL_USER_ID || "Using Clerk userId as fallback"
+            actualExternalUserId: process.env.PIPEDREAM_EXTERNAL_USER_ID || "Using Clerk userId as fallback"
           }
         })
       }
