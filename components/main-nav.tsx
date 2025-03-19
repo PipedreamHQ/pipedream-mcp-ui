@@ -35,7 +35,7 @@ export function MainNav() {
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
         <p className="text-muted-foreground">
-          Browse MCP servers for more than 2,500 APIs with 8,000 prebuilt tools
+          Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools
         </p>
       </div>
       <div className="flex items-center space-x-4">
