@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, ExternalLink, Lock } from "lucide-react"
+import { Copy, Check, ExternalLink, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import type { App } from "@/lib/supabase"
@@ -15,6 +15,7 @@ interface InstallationTabsProps {
 
 export default function InstallationTabs({ app }: InstallationTabsProps) {
   const [copied, setCopied] = useState(false)
+  const [showUrl, setShowUrl] = useState(false)
   const [externalUserId, setExternalUserId] = useState<string | null>(null)
   const { isLoaded, userId } = useAuth()
   const { user } = useUser()
@@ -162,7 +163,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
   
   // Create an obfuscated version of the URL for display
   const displayUrl = mcpServerUrl ? 
-    `https://mcp.pipedream.com/****/${app.name_slug}` : 
+    (showUrl ? mcpServerUrl : "••••••••••••••••••••••••••••••••••••") : 
     null
 
   const copyToClipboard = () => {
@@ -217,13 +218,21 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
       <div className="bg-muted rounded-md p-3 mt-4">
         <div className="flex items-center justify-between mb-1">
           <p className="text-xs text-muted-foreground">MCP server URL</p>
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyToClipboard}>
-            {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-          </Button>
+          <div className="flex items-center space-x-1">
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowUrl(!showUrl)}>
+              {showUrl ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyToClipboard}>
+              {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            </Button>
+          </div>
         </div>
         <code className="text-xs font-mono bg-background p-1.5 rounded border block w-full overflow-x-auto">
           {displayUrl}
         </code>
+        <p className="text-xs text-muted-foreground mt-2">
+          <span className="text-amber-500">•</span> This URL is unique to your account and should be kept private.
+        </p>
       </div>
     )
   }
@@ -288,7 +297,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <code>{`import { MCPClient } from '@pipedream/mcp-client';
 
 const client = new MCPClient({
-  serverUrl: '${externalUserId ? mcpServerUrl : "YOUR_MCP_SERVER_URL"}'
+  serverUrl: '${externalUserId ? (showUrl ? mcpServerUrl : "YOUR_MCP_SERVER_URL") : "YOUR_MCP_SERVER_URL"}'
 });
 
 // Example: Send a message to a Slack channel
@@ -316,7 +325,7 @@ async function sendMessage() {
               <code>{`from pipedream_mcp_client import MCPClient
 
 client = MCPClient(
-    server_url='${externalUserId ? mcpServerUrl : "YOUR_MCP_SERVER_URL"}'
+    server_url='${externalUserId ? (showUrl ? mcpServerUrl : "YOUR_MCP_SERVER_URL") : "YOUR_MCP_SERVER_URL"}'
 )
 
 # Example: Send a message to a Slack channel
