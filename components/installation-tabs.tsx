@@ -332,7 +332,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   className="absolute right-2 top-2 text-muted-foreground hover:text-foreground focus:outline-none" 
                   onClick={(event) => {
                     // Use actual URL for clipboard but obfuscate in display
-                    const config = `"pipedream-${app.name_slug}": {
+                    const config = `"${app.name_slug}": {
   "command": "npx",
   "args": [
     "-y",
