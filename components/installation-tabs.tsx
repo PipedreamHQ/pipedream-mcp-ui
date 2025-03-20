@@ -309,15 +309,14 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           {/* Desktop Tabs - hidden on mobile, styled like main-nav */}
           <div className="hidden md:block mb-6">
             <TooltipProvider>
-              <nav className="flex justify-start rounded-lg p-1 bg-muted/30 w-fit overflow-hidden transition-all duration-300">
-                <div className="flex items-center gap-2">
+              <div className="flex justify-start rounded-lg p-1 bg-muted/30 w-fit overflow-hidden transition-all duration-300">
+                <TabsList className="bg-transparent flex items-center gap-2 p-0 h-auto">
                   <TabsTrigger 
                     value="cursor" 
                     className={cn(
-                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center",
-                      currentTab === "cursor" 
-                        ? "bg-primary text-primary-foreground shadow-sm" 
-                        : "hover:bg-muted/80 text-foreground"
+                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center data-[state=active]:shadow-sm",
+                      "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                      "data-[state=inactive]:bg-transparent data-[state=inactive]:hover:bg-muted/80"
                     )}
                   >
                     Cursor
@@ -325,10 +324,9 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   <TabsTrigger 
                     value="claude" 
                     className={cn(
-                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center",
-                      currentTab === "claude" 
-                        ? "bg-primary text-primary-foreground shadow-sm" 
-                        : "hover:bg-muted/80 text-foreground"
+                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center data-[state=active]:shadow-sm",
+                      "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                      "data-[state=inactive]:bg-transparent data-[state=inactive]:hover:bg-muted/80"
                     )}
                   >
                     Claude
@@ -375,8 +373,8 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                       <p>Coming soon</p>
                     </TooltipContent>
                   </Tooltip>
-                </div>
-              </nav>
+                </TabsList>
+              </div>
             </TooltipProvider>
           </div>
 
