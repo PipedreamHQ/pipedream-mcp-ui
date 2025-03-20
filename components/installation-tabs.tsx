@@ -300,24 +300,24 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           </div>
           
           {/* Desktop Tabs - hidden on mobile */}
-          <TabsList className="mb-6 w-full md:max-w-3xl hidden md:flex items-stretch overflow-x-auto">
+          <TabsList className="mb-6 w-full md:max-w-3xl hidden md:flex items-center overflow-x-auto">
             <TabsTrigger 
               value="cursor" 
-              className="text-sm flex-1 h-10 min-w-[80px] transition-all duration-300"
+              className="text-sm flex-1 h-10 min-w-[80px] flex items-center justify-center transition-all duration-300"
             >
               Cursor
             </TabsTrigger>
             <TabsTrigger 
               value="claude" 
-              className="text-sm flex-1 h-10 min-w-[80px] transition-all duration-300"
+              className="text-sm flex-1 h-10 min-w-[80px] flex items-center justify-center transition-all duration-300"
             >
               Claude
             </TabsTrigger>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center">
+            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
               <TabsTrigger 
                 value="windsurf" 
                 disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-10 w-full transition-all duration-300"
+                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
               >
                 Windsurf
               </TabsTrigger>
@@ -325,11 +325,11 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                 Coming soon
               </div>
             </div>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center">
+            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
               <TabsTrigger 
                 value="typescript" 
                 disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-10 w-full transition-all duration-300"
+                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
               >
                 TypeScript
               </TabsTrigger>
@@ -337,11 +337,11 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                 Coming soon
               </div>
             </div>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center">
+            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
               <TabsTrigger 
                 value="python" 
                 disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-10 w-full transition-all duration-300"
+                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
               >
                 Python
               </TabsTrigger>
