@@ -8,6 +8,11 @@ export async function GET(request: Request, { params }: { params: { slug: string
     return NextResponse.json({ error: "App slug is required" }, { status: 400 })
   }
 
+  // Validate slug format (slugs should only contain alphanumeric, hyphens, and underscores)
+  if (!/^[a-zA-Z0-9-_]+$/.test(slug)) {
+    return NextResponse.json({ error: "Invalid slug format" }, { status: 400 })
+  }
+
   try {
     console.log(`Fetching actions for app with slug: ${slug}`)
 

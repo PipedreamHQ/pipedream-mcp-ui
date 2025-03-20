@@ -56,13 +56,21 @@ export async function GET(request: Request) {
 
       // Apply search filter if query exists
       if (query) {
-        supabaseQuery = supabaseQuery.or(
-          `APP_NAME.ilike.%${query}%,APP_NAME_SLUG.ilike.%${query}%,APP_DESCRIPTION.ilike.%${query}%`,
-        )
+        // Properly sanitize input and use parameterized queries
+        const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&'); // Escape special characters
+        supabaseQuery = supabaseQuery.or([
+          { APP_NAME: { ilike: `%${sanitizedQuery}%` } },
+          { APP_NAME_SLUG: { ilike: `%${sanitizedQuery}%` } },
+          { APP_DESCRIPTION: { ilike: `%${sanitizedQuery}%` } }
+        ])
       }
 
       // Apply category filter if category exists
       if (category) {
+        // Validate category input - categories should only contain alphanumeric and spaces
+        if (!/^[a-zA-Z0-9 ]+$/.test(category)) {
+          throw new Error("Invalid category format")
+        }
         supabaseQuery = supabaseQuery.eq("CATEGORY_NAME", category)
       }
 
@@ -138,20 +146,20 @@ export async function GET(request: Request) {
   // Fallback to Pipedream API
   try {
     console.log("Fetching from Pipedream API...")
-    console.log("Environment check:", {
-      environment: process.env.PIPEDREAM_ENVIRONMENT,
-      hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
-      hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
-      hasProjectId: !!process.env.PIPEDREAM_PROJECT_ID
-    })
+    console.log("Attempting to connect to Pipedream API...")
+
+    // Check required environment variables
+    if (!process.env.PIPEDREAM_OAUTH_CLIENT_ID || !process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || !process.env.PIPEDREAM_PROJECT_ID) {
+      throw new Error("Missing required Pipedream credentials")
+    }
 
     const pd = createBackendClient({
       environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
       credentials: {
-        clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || "",
-        clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || "",
+        clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID,
+        clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
       },
-      projectId: process.env.PIPEDREAM_PROJECT_ID || "",
+      projectId: process.env.PIPEDREAM_PROJECT_ID,
     })
 
     const options: any = {}

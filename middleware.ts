@@ -81,9 +81,11 @@ function generateCSPString(nonce: string): string {
     'default-src': ["'self'"],
     
     // Script sources - self and Clerk
+    // XXX any way to avoid unsafe-inline?
     'script-src': ["'self'", "'strict-dynamic'", `'nonce-${nonce}'`, "https://*.clerk.accounts.dev", "*.clerk.app", "https://clerk.dev", "'unsafe-inline'"],
     
     // Style sources - allow inline styles needed by many frameworks
+    // XXX any way to avoid unsafe-inline?
     'style-src': ["'self'", "'unsafe-inline'"],
     
     // Image sources
