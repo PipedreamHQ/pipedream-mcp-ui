@@ -54,14 +54,16 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
-        <body className="font-sans">
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <html lang="en" className={GeistSans.variable} suppressHydrationWarning scroll-smooth>
+        <body className="font-sans transition-all duration-200">
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <ClerkLoaded>
               <UserMetadataInitializer />
             </ClerkLoaded>
             <RedirectHandler />
-            {children}
+            <div className="transition-opacity duration-300">
+              {children}
+            </div>
           </ThemeProvider>
         </body>
       </html>

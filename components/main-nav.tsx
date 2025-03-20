@@ -31,10 +31,10 @@ export function MainNav() {
   }, [isLoaded, userId])
 
   return (
-    <div className="flex justify-between items-center mb-10">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 md:gap-4 mb-6 md:mb-10">
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
           <Link 
             href="https://pipedream.com/connect"
@@ -46,15 +46,15 @@ export function MainNav() {
           </Link>
         </p>
       </div>
-      <div className="flex items-center space-x-4">
-        <nav className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center gap-2 md:gap-4">
+        <nav className="flex flex-wrap items-center gap-2 border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
           <Link 
             href="/" 
             className={cn(
-              "px-4 py-2 rounded-md font-medium transition-colors text-sm",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-32 text-center",
               isHomePage || isAppDetailPage
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted hover:bg-muted/80 text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "hover:bg-muted/80 text-foreground"
             )}
           >
             MCP Servers
@@ -62,10 +62,10 @@ export function MainNav() {
           <Link 
             href="/accounts" 
             className={cn(
-              "px-4 py-2 rounded-md font-medium transition-colors text-sm",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-32 text-center",
               isAccountsPage
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted hover:bg-muted/80 text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "hover:bg-muted/80 text-foreground"
             )}
           >
             Connected Accounts
@@ -76,18 +76,20 @@ export function MainNav() {
             <Link 
               href="/test/clerk-metadata-test" 
               className={cn(
-                "px-4 py-2 rounded-md font-medium transition-colors text-sm",
+                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm",
                 isClerkTestPage
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted hover:bg-muted/80 text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "hover:bg-muted/80 text-foreground"
               )}
             >
               Clerk Test
             </Link>
           )}
         </nav>
-        <UserButton />
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <UserButton />
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   )

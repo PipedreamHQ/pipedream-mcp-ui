@@ -191,7 +191,7 @@ export default async function AppDetailPage({ params }: { params: { slug: string
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-8 pb-12">
         <MainNav />
         
         <div className="mt-6 mb-6">
@@ -207,12 +207,12 @@ export default async function AppDetailPage({ params }: { params: { slug: string
           <AppDetailHeader app={app} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           <div className="lg:col-span-2">
             <InstallationTabs app={app} />
           </div>
 
-          <div>
+          <div className="mt-6 lg:mt-0">
             <AvailableActions actions={actions} />
           </div>
         </div>

@@ -275,20 +275,22 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="cursor">
-          <TabsList className="grid grid-cols-5 mb-6">
-            <TabsTrigger value="cursor">Cursor</TabsTrigger>
-            <TabsTrigger value="claude">Claude Desktop</TabsTrigger>
-            <div className="relative group">
-              <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed w-full">Windsurf</TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
-            </div>
-            <div className="relative group">
-              <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed w-full">TypeScript</TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
-            </div>
-            <div className="relative group">
-              <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed w-full">Python</TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+          <TabsList className="grid mb-6 gap-1 w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 w-full gap-1">
+              <TabsTrigger value="cursor" className="text-xs sm:text-sm w-full transition-all duration-200">Cursor</TabsTrigger>
+              <TabsTrigger value="claude" className="text-xs sm:text-sm w-full transition-all duration-200">Claude</TabsTrigger>
+              <div className="relative group">
+                <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm">Windsurf</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+              </div>
+              <div className="relative group hidden sm:block">
+                <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm">TypeScript</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+              </div>
+              <div className="relative group hidden sm:block">
+                <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm">Python</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+              </div>
             </div>
           </TabsList>
 
