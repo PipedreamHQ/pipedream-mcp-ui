@@ -32,10 +32,11 @@ export function MainNav() {
 
   return (
     <div className="mb-6 md:mb-10 mt-0 relative">
-      {/* User buttons fixed at top right on mobile */}
-      <div className="absolute top-0 right-0 flex items-center gap-2 z-10">
-        <UserButton />
-        <ThemeToggle />
+      <div className="flex flex-row justify-end mb-4">
+        <div className="flex items-center gap-2">
+          <UserButton />
+          <ThemeToggle />
+        </div>
       </div>
       
       <div className="flex flex-col md:flex-row md:justify-between md:items-start">
