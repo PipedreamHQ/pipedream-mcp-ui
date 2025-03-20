@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { CSRF_HEADER } from '@/lib/csrf';
 
 // Create a context for the CSRF token
 export const CSRFContext = createContext<string>('');
@@ -14,6 +15,15 @@ export function getNonce(): string {
   return '';
 }
 
+// Get CSRF token from meta tag - more secure than using cookies in JS
+export function getCSRFTokenFromMeta(): string {
+  if (typeof document !== 'undefined') {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') || '' : '';
+  }
+  return '';
+}
+
 export function useCSRFToken() {
   return useContext(CSRFContext);
 }
@@ -22,50 +32,58 @@ export default function CSRFProvider({ children }: { children: React.ReactNode }
   const [csrfToken, setCSRFToken] = useState<string>('');
 
   useEffect(() => {
-    // Get the token from cookies
-    const getCookieValue = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      
-      if (parts.length === 2) {
-        return parts.pop()?.split(';').shift() || '';
-      }
-      return '';
-    };
-
-    // Get the CSRF token from the cookie
-    const token = getCookieValue('XSRF-TOKEN');
-    
-    // If we already have the token in cookies, use it
-    if (token) {
-      setCSRFToken(token);
-    } else {
-      // Otherwise fetch from the API to set the cookie
-      // Add CSP nonce to script elements
-      const nonce = getNonce();
-      const fetchOptions: RequestInit = {};
-      
-      // If we have a nonce, add it to the request headers
-      if (nonce) {
-        fetchOptions.headers = { 'x-nonce': nonce };
-      }
-      
-      fetch('/api/csrf', fetchOptions)
-        .then(res => {
-          // After fetching, the cookie should be set
-          // Get the token from the response header
-          const headerToken = res.headers.get('X-CSRF-Token');
-          if (headerToken) {
-            setCSRFToken(headerToken);
-          } else {
-            // Or try to get it from cookies again
-            setCSRFToken(getCookieValue('XSRF-TOKEN'));
+    // Function to fetch new token
+    const fetchNewToken = async () => {
+      try {
+        const nonce = getNonce();
+        const fetchOptions: RequestInit = {};
+        
+        if (nonce) {
+          fetchOptions.headers = { 'x-nonce': nonce };
+        }
+        
+        const res = await fetch('/api/csrf', fetchOptions);
+        
+        // Get token from header (most reliable)
+        const headerToken = res.headers.get(CSRF_HEADER);
+        if (headerToken) {
+          setCSRFToken(headerToken);
+        } else {
+          // Fallback: get from meta tag if present
+          const metaToken = getCSRFTokenFromMeta();
+          if (metaToken) {
+            setCSRFToken(metaToken);
           }
-        })
-        .catch(err => {
-          console.error('Failed to fetch CSRF token:', err);
-        });
+        }
+      } catch (err) {
+        console.error('Failed to fetch CSRF token:', err);
+        // After a failure, retry once after 3 seconds
+        setTimeout(() => {
+          fetchNewToken().catch(e => {
+            console.error('Retry to fetch CSRF token also failed:', e);
+          });
+        }, 3000);
+      }
+    };
+    
+    // Get the CSRF token from the meta tag first
+    const metaToken = getCSRFTokenFromMeta();
+    
+    if (metaToken) {
+      setCSRFToken(metaToken);
+    } else {
+      // If not available in meta tag, fetch a new token
+      fetchNewToken();
     }
+    
+    // Set up token refresh interval (every 30 minutes)
+    const intervalId = setInterval(() => {
+      fetchNewToken();
+    }, 30 * 60 * 1000); // 30 minutes
+    
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   return (

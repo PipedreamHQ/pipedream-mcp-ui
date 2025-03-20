@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
 import RedirectHandler from "@/components/redirect-handler"
 import CSRFProvider from "@/components/csrf-provider"
+import SessionProvider from "@/components/session-provider"
 import { csrfToken } from "@/lib/csrf"
 
 // Use GeistSans as our primary font
@@ -46,13 +47,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Generate CSRF token for the page
+  // Generate CSRF token for the meta tag
   const token = await csrfToken();
   
   return (
     <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
       <head>
         <meta name="csrf-token" content={token} />
+        <meta name="csp-nonce" content={token} />
       </head>
       <body className="font-sans">
         <ClerkProvider 
@@ -65,9 +67,11 @@ export default async function RootLayout({
         >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             <CSRFProvider>
-              <UserMetadataInitializer />
-              <RedirectHandler />
-              {children}
+              <SessionProvider>
+                <UserMetadataInitializer />
+                <RedirectHandler />
+                {children}
+              </SessionProvider>
             </CSRFProvider>
           </ThemeProvider>
         </ClerkProvider>

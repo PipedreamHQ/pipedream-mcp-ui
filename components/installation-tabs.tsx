@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Copy, Check, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSessionId } from "@/lib/fetch-with-csrf"
 import type { App } from "@/lib/supabase"
 
 interface InstallationTabsProps {
@@ -18,87 +19,9 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
   const [copied, setCopied] = useState(false)
   const [showUrl, setShowUrl] = useState(false)
   const pathname = usePathname()
-  const [externalUserId, setExternalUserId] = useState<string | null>(null)
+  const externalUserId = useSessionId()
   const { isLoaded, userId } = useAuth()
   const { user } = useUser()
-
-  // Get or generate a UUID for this session, but only if the user is logged in
-  useEffect(() => {
-    async function getExternalUserId() {
-      // Only proceed if user is authenticated
-      if (!userId) {
-        console.log("User not authenticated, not generating UUID")
-        return
-      }
-
-      // First check if we already have a UUID in sessionStorage for this page session
-      const storedId = sessionStorage.getItem('pdExternalUserId')
-      
-      if (storedId) {
-        console.log("Using stored UUID from session:", storedId)
-        
-        // Set up a listener to add the session ID to API calls for consistency
-        if (typeof window !== 'undefined') {
-          const originalFetch = window.fetch;
-          window.fetch = function(input, init = {}) {
-            // Only add the header for our API calls
-            if (typeof input === 'string' && input.startsWith('/api/')) {
-              init.headers = init.headers || {};
-              init.headers = {
-                ...init.headers,
-                'x-session-id': storedId
-              };
-            }
-            return originalFetch(input, init);
-          };
-        }
-        
-        setExternalUserId(storedId)
-        return
-      }
-      
-      // If no stored ID, get a new UUID from the server
-      try {
-        const response = await fetch('/api/external-user-id')
-        
-        if (response.ok) {
-          const data = await response.json()
-          if (data.externalUserId) {
-            console.log("Using server-generated UUID:", data.externalUserId)
-            const newUuid = data.externalUserId
-            
-            // Set up a listener to add the session ID to API calls for consistency
-            if (typeof window !== 'undefined') {
-              const originalFetch = window.fetch;
-              window.fetch = function(input, init = {}) {
-                // Only add the header for our API calls
-                if (typeof input === 'string' && input.startsWith('/api/')) {
-                  init.headers = init.headers || {};
-                  init.headers = {
-                    ...init.headers,
-                    'x-session-id': newUuid
-                  };
-                }
-                return originalFetch(input, init);
-              };
-            }
-            
-            setExternalUserId(newUuid)
-            // Store in session storage so it persists during navigation
-            sessionStorage.setItem('pdExternalUserId', newUuid)
-            return
-          }
-        }
-      } catch (error) {
-        console.error("Error getting external user ID from server:", error)
-      }
-    }
-    
-    // Only get the external user ID when auth is loaded
-    if (isLoaded) {
-      getExternalUserId()
-    }
-  }, [isLoaded, userId])
   
   // Generate a unique MCP server URL using the external user ID
   const mcpServerUrl = externalUserId ? 
