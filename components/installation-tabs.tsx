@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Copy, Check, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth, useUser } from "@clerk/nextjs"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import type { App } from "@/lib/supabase"
 
 interface InstallationTabsProps {
@@ -16,6 +17,7 @@ interface InstallationTabsProps {
 export default function InstallationTabs({ app }: InstallationTabsProps) {
   const [copied, setCopied] = useState(false)
   const [showUrl, setShowUrl] = useState(false)
+  const pathname = usePathname()
   const [externalUserId, setExternalUserId] = useState<string | null>(null)
   const { isLoaded, userId } = useAuth()
   const { user } = useUser()
@@ -138,7 +140,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <div>
                 <p className="text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
                 <Button size="sm" asChild>
-                  <Link href="/sign-in">Sign In</Link>
+                  <Link href={`/sign-in?redirect_url=${encodeURIComponent(pathname)}`}>Sign In</Link>
                 </Button>
               </div>
             </div>
