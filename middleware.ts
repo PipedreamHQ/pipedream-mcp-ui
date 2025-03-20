@@ -1,6 +1,6 @@
 // middleware.ts
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import type { NextRequest, NextFetchEvent } from 'next/server'
 import { clerkMiddleware, getAuth } from '@clerk/nextjs/server'
 
 // Generate a nonce for CSP
@@ -8,8 +8,8 @@ function generateNonce() {
   return Buffer.from(crypto.randomUUID()).toString('base64');
 }
 
-// This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
+// Create a custom middleware that applies security headers
+export function middleware(request: NextRequest, event: NextFetchEvent) {
   // Generate a nonce for this request
   const nonce = generateNonce();
   
@@ -31,53 +31,34 @@ export function middleware(request: NextRequest) {
     return redirectResponse;
   }
   
-  // Step 1: Create our secure headers response
-  const secureResponse = NextResponse.next();
-  addSecurityHeaders(secureResponse, nonce);
+  // Apply Clerk middleware
+  const clerkHandler = clerkMiddleware();
   
-  // Step 2: Get the clerk auth middleware
-  const clerkMiddlewareHandler = clerkMiddleware();
+  // Get the result of Clerk's middleware
+  const clerkResponse = clerkHandler(request, event);
   
-  // Step 3: Apply custom event handlers - this is needed for auth to work correctly
-  const clerkResponse = clerkMiddlewareHandler(request);
-  
-  // Step 4: If we get a response from Clerk, apply our security headers to it
-  // This is a bit of a hack because of the typing issues, but it should work
-  if (clerkResponse) {
-    try {
-      // Wait for the promise to resolve if it's a promise
-      return Promise.resolve(clerkResponse).then(res => {
-        // If it's a Response object, clone it and add our headers
-        if (res instanceof Response) {
-          const headers = new Headers(res.headers);
-          
-          // Add CSP and security headers
-          headers.set('Content-Security-Policy', generateCSPString(nonce));
-          headers.set('X-Content-Type-Options', 'nosniff');
-          headers.set('X-Frame-Options', 'SAMEORIGIN');
-          headers.set('X-XSS-Protection', '1; mode=block');
-          headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-          
-          // Create a new response with our headers
-          return new Response(res.body, {
-            status: res.status,
-            statusText: res.statusText,
-            headers
-          });
-        }
-        
-        // If it's not a Response, return it as is
-        return res;
+  // Create a wrapper for the response to add our CSP headers
+  return Promise.resolve(clerkResponse).then(response => {
+    if (response instanceof Response) {
+      // Clone the response to modify headers
+      const headers = new Headers(response.headers);
+      
+      // Add CSP and security headers
+      headers.set('Content-Security-Policy', generateCSPString(nonce));
+      headers.set('X-Content-Type-Options', 'nosniff');
+      headers.set('X-Frame-Options', 'SAMEORIGIN');
+      headers.set('X-XSS-Protection', '1; mode=block');
+      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+      
+      // Create a new response with our headers
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
       });
-    } catch (e) {
-      // If anything goes wrong with modifying the clerk response,
-      // fall back to our secure response
-      return secureResponse;
     }
-  }
-  
-  // Return the secure response by default
-  return secureResponse;
+    return response;
+  });
 }
 
 // Helper function to add security headers
