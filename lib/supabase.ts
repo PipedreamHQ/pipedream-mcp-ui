@@ -9,6 +9,7 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   throw new Error("Missing required Supabase environment variables")
 }
 
+// Create a server-side client to prevent exposing credentials to the client
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -98,4 +99,3 @@ export type SupabaseApp = {
   CATEGORY_NAME: string
   PD_BUILDER_ONLY: boolean
 }
-

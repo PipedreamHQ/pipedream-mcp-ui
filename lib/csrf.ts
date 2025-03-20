@@ -24,7 +24,7 @@ export const setup = (res: Response): Response => {
   const headers = new Headers(res.headers);
   
   // Set cookie with the token (httpOnly for security)
-  headers.append('Set-Cookie', `XSRF-TOKEN=${token}; Path=/; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
+  headers.append('Set-Cookie', `XSRF-TOKEN=${token}; Path=/; SameSite=Lax; HttpOnly; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
   
   // Add the token to response headers too so it's accessible via JavaScript
   headers.append('X-CSRF-Token', token);

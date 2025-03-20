@@ -67,6 +67,8 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
       headers.set('X-Frame-Options', 'SAMEORIGIN');
       headers.set('X-XSS-Protection', '1; mode=block');
       headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+      headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+      headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
       
       // Create a new response with our headers
       return new Response(response.body, {
@@ -89,6 +91,8 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 }
 
 // Helper function to generate CSP string
