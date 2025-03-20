@@ -260,7 +260,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           </code>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          <span className="text-amber-500">•</span> Do not share this URL with anyone. You should treat it like a sensitive token.
+          Do not share this URL with anyone. You should treat it like a sensitive token.
         </p>
       </div>
     )
@@ -277,16 +277,25 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
         <Tabs defaultValue="cursor">
           <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="cursor">Cursor</TabsTrigger>
-            <TabsTrigger value="claude" disabled className="opacity-60 cursor-not-allowed">Claude (Coming soon)</TabsTrigger>
-            <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed">Windsurf (Coming soon)</TabsTrigger>
-            <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed">TypeScript (Coming soon)</TabsTrigger>
-            <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed">Python (Coming soon)</TabsTrigger>
+            <TabsTrigger value="claude">Claude Desktop</TabsTrigger>
+            <div className="relative group">
+              <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed w-full">Windsurf</TabsTrigger>
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+            </div>
+            <div className="relative group">
+              <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed w-full">TypeScript</TabsTrigger>
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+            </div>
+            <div className="relative group">
+              <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed w-full">Python</TabsTrigger>
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap">Coming soon</div>
+            </div>
           </TabsList>
 
           <TabsContent value="cursor" className="space-y-4">
-            <ol className="space-y-4 list-decimal list-inside">
-              <li>Navigate to "Settings", then "Cursor Settings"</li>
-              <li>Select "MCP" on the left</li>
+            <ol className="space-y-2 list-decimal list-inside">
+              <li>Navigate to <strong>Settings</strong>, then <strong>Cursor Settings</strong></li>
+              <li>Select <strong>MCP</strong> on the left</li>
               <li>Add a new MCP server by pasting the URL below:</li>
             </ol>
 
@@ -294,21 +303,79 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
           </TabsContent>
 
           <TabsContent value="claude" className="space-y-4">
-            <ol className="space-y-4 list-decimal list-inside">
-              <li>Open Claude AI</li>
-              <li>Go to Settings → Advanced</li>
-              <li>Enable "External Tools"</li>
-              <li>Add new MCP server with this URL:</li>
+            <ol className="space-y-2 list-decimal list-inside">
+              <li>Open the <strong>Claude Desktop</strong> app</li>
+              <li>Go to <strong>Settings</strong>, then <strong>Developer</strong></li>
+              <li>Click <strong>Edit Config</strong></li>
+              <li>Open the <span className="font-semibold">claude_desktop_config.json</span> file</li>
+              <li>Add the below MCP server configuration to your existing file</li>
+              <li>Make sure to restart Claude when that's done</li>
             </ol>
 
-            {renderUrlSection()}
+            <div className="bg-muted p-3 rounded-md mt-4">
+              <p className="text-sm text-muted-foreground mb-1">Default configuration</p>
+              <div className="bg-background p-2 rounded border block w-full overflow-x-auto">
+                <pre className="text-xs font-mono">
+                  <code>{`{
+  "mcpServers": {}
+}`}</code>
+                </pre>
+              </div>
+            </div>
+
+            <div className="bg-muted p-3 rounded-md mt-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Add this inside the <strong>mcpServers</strong> object in your configuration file
+              </p>
+              <div className="relative">
+                <button 
+                  className="absolute right-2 top-2 text-muted-foreground hover:text-foreground focus:outline-none" 
+                  onClick={(event) => {
+                    // Use actual URL for clipboard but obfuscate in display
+                    const config = `"pipedream-${app.name_slug}": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "supergateway",
+    "--sse",
+    "${mcpServerUrl || '{mcp_server_url}'}"
+  ]
+}`;
+                    navigator.clipboard.writeText(config);
+                    
+                    // Show the checkmark temporarily
+                    const button = event.currentTarget;
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    setTimeout(() => {
+                      button.innerHTML = originalContent;
+                    }, 2000);
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+                <div className="bg-background p-2 rounded border block w-full overflow-x-auto">
+                  <pre className="text-xs font-mono">
+                    <code>{`"pipedream-${app.name_slug}": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "supergateway",
+    "--sse",
+    "${mcpServerUrl ? "https://mcp.pipedream.com/**********/" + app.name_slug : '{mcp_server_url}'}"
+  ]
+}`}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="windsurf" className="space-y-4">
             <ol className="space-y-4 list-decimal list-inside">
-              <li>Open Windsurf Browser</li>
-              <li>Navigate to Extensions</li>
-              <li>Enable "AI Tools"</li>
+              <li>Open <strong>Windsurf Browser</strong></li>
+              <li>Navigate to <strong>Extensions</strong></li>
+              <li>Enable <strong>AI Tools</strong></li>
               <li>Add new MCP server with this URL:</li>
             </ol>
 
