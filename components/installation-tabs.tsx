@@ -333,7 +333,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   </TabsTrigger>
                   {/* Using separate div elements with tooltips for disabled tabs */}
                   <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-help bg-transparent">
+                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed bg-transparent">
                       Windsurf
                     </div>
                     <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
@@ -342,7 +342,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   </div>
                   
                   <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-help bg-transparent">
+                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed bg-transparent">
                       TypeScript
                     </div>
                     <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
@@ -351,7 +351,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   </div>
                   
                   <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-help bg-transparent">
+                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed bg-transparent">
                       Python
                     </div>
                     <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
