@@ -275,21 +275,25 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
       </CardHeader>
       <CardContent className="sm:px-6">
         <Tabs defaultValue="cursor" className="transition-all duration-300">
-          <TabsList className="mb-6 gap-1 w-full max-w-full md:max-w-3xl mx-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 w-full gap-1 items-center">
-              <TabsTrigger value="cursor" className="text-xs sm:text-sm w-full transition-all duration-300 min-w-[60px] h-9 flex items-center justify-center">Cursor</TabsTrigger>
-              <TabsTrigger value="claude" className="text-xs sm:text-sm w-full transition-all duration-300 min-w-[60px] h-9 flex items-center justify-center">Claude</TabsTrigger>
-              <div className="relative group flex items-center">
-                <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm transition-all duration-300 min-w-[60px] h-9 flex items-center justify-center">Windsurf</TabsTrigger>
-                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
+          <TabsList className="mb-6 gap-1 grid w-full max-w-full md:max-w-3xl mx-auto overflow-hidden">
+            <div className="flex flex-wrap sm:grid sm:grid-cols-3 md:grid-cols-5 w-full gap-1 justify-center">
+              <div className="w-full sm:w-auto">
+                <TabsTrigger value="cursor" className="text-xs sm:text-sm w-full h-9 flex items-center justify-center transition-all duration-300">Cursor</TabsTrigger>
               </div>
-              <div className="relative group hidden sm:flex sm:items-center">
-                <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm transition-all duration-300 min-w-[60px] h-9 flex items-center justify-center">TypeScript</TabsTrigger>
-                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
+              <div className="w-full sm:w-auto">
+                <TabsTrigger value="claude" className="text-xs sm:text-sm w-full h-9 flex items-center justify-center transition-all duration-300">Claude</TabsTrigger>
               </div>
-              <div className="relative group hidden sm:flex sm:items-center">
-                <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm transition-all duration-300 min-w-[60px] h-9 flex items-center justify-center">Python</TabsTrigger>
-                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-8 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
+              <div className="relative group w-full sm:w-auto">
+                <TabsTrigger value="windsurf" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm h-9 flex items-center justify-center transition-all duration-300">Windsurf</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
+              </div>
+              <div className="relative group hidden sm:block w-full sm:w-auto">
+                <TabsTrigger value="typescript" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm h-9 flex items-center justify-center transition-all duration-300">TypeScript</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
+              </div>
+              <div className="relative group hidden sm:block w-full sm:w-auto">
+                <TabsTrigger value="python" disabled className="opacity-60 cursor-not-allowed w-full text-xs sm:text-sm h-9 flex items-center justify-center transition-all duration-300">Python</TabsTrigger>
+                <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">Coming soon</div>
               </div>
             </div>
           </TabsList>
