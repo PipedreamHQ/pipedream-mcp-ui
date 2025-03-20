@@ -50,7 +50,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
     if (isLoaded) {
       getExternalUserId();
     }
-  }, [isLoaded, userId]);
+  }, [isLoaded, userId, fetchWithCSRF]);
 
   return (
     <SessionIdContext.Provider value={sessionId}>

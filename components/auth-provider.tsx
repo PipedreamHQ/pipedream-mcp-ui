@@ -1,6 +1,5 @@
 'use client';
 
-// Import directly and let the 'use client' directive handle it
 import { ClerkProvider } from '@clerk/nextjs';
 import React from 'react';
 
@@ -30,9 +29,6 @@ export default function AuthProvider({
           card: "shadow-lg",
         },
       }}
-      // Tell Clerk to respect our CSP nonce
-      loadChunksAtBootstrap={false}
-      allowSiteMembers={true}
     >
       {children}
     </ClerkProvider>

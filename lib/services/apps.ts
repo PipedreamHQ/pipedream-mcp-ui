@@ -132,7 +132,13 @@ export async function getApps({
       projectId: process.env.PIPEDREAM_PROJECT_ID,
     });
 
-    const options: any = {};
+    const options: {
+      q?: string;
+      limit: number;
+      [key: string]: unknown;
+    } = {
+      limit: pageSize
+    };
 
     if (query) {
       options.q = query;
@@ -148,12 +154,24 @@ export async function getApps({
 
     if (category && filteredApps.length > 0) {
       filteredApps = filteredApps.filter(
-        (app: any) => app.categories && app.categories.some((cat: string) => cat.toLowerCase() === category.toLowerCase()),
+        (app: {
+          id: string;
+          name: string;
+          name_slug: string;
+          description?: string;
+          categories?: string[];
+        }) => app.categories && app.categories.some((cat: string) => cat.toLowerCase() === category.toLowerCase()),
       );
     }
 
     // Map Pipedream API data to our app structure
-    const mappedApps = filteredApps.map((app: any) => ({
+    const mappedApps = filteredApps.map((app: {
+      id: string;
+      name: string;
+      name_slug: string;
+      description?: string;
+      categories?: string[];
+    }) => ({
       id: app.id,
       name: app.name,
       name_slug: app.name_slug,

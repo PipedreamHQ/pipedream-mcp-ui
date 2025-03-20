@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCSRFToken } from './csrf';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Apply standard security headers to an API response
@@ -22,7 +23,7 @@ export function applySecurityHeaders(response: NextResponse): NextResponse {
 /**
  * Create a secure JSON response with appropriate security headers
  */
-export function secureJsonResponse(data: any, options: { status?: number } = {}): NextResponse {
+export function secureJsonResponse<T extends Record<string, unknown>>(data: T, options: { status?: number } = {}): NextResponse {
   const response = NextResponse.json(data, options);
   return applySecurityHeaders(response);
 }
@@ -31,8 +32,8 @@ export function secureJsonResponse(data: any, options: { status?: number } = {})
  * Higher-order function for protecting API routes with CSRF validation
  * Use this to consistently apply CSRF protection to route handlers
  */
-export function withCSRFProtection<T>(handler: (req: NextRequest, ...args: any[]) => Promise<T>) {
-  return async function(req: NextRequest, ...args: any[]) {
+export function withCSRFProtection<T, Args extends unknown[]>(handler: (req: NextRequest, ...args: Args) => Promise<T>) {
+  return async function(req: NextRequest, ...args: Args) {
     // Route-level CSRF validation as defense in depth
     // Even though middleware also does this check, applying it here ensures
     // protection even if middleware is bypassed
@@ -54,13 +55,12 @@ export function withCSRFProtection<T>(handler: (req: NextRequest, ...args: any[]
 
 /**
  * Helper function to sanitize user inputs to prevent XSS
+ * Uses DOMPurify for robust XSS protection
  */
 export function sanitizeInput(input: string): string {
-  // Basic HTML sanitization
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  if (!input) return '';
+  
+  // Use DOMPurify for comprehensive sanitization
+  // This handles complex XSS attack vectors
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }); // Strip all HTML
 }

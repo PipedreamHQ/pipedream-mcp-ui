@@ -41,7 +41,13 @@ function addCSRFToRequest(
       // Parse the existing body if it exists
       if (options.body) {
         if (typeof options.body === 'string') {
-          body = JSON.parse(options.body);
+          try {
+            body = JSON.parse(options.body);
+          } catch (parseError) {
+            console.warn('Could not parse request body as JSON:', parseError);
+            // Return with just headers since we couldn't parse the body
+            return newOptions;
+          }
         } else if (options.body instanceof FormData) {
           // Can't mix FormData with JSON, so return with just headers
           return newOptions;

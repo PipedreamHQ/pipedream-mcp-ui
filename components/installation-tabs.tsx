@@ -153,7 +153,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <li>Click <strong>Edit Config</strong></li>
               <li>Open the <span className="font-semibold">claude_desktop_config.json</span> file</li>
               <li>Add the below MCP server configuration to your existing file</li>
-              <li>Make sure to restart Claude when that's done</li>
+              <li>Make sure to restart Claude when that&apos;s done</li>
             </ol>
 
             <div className="bg-muted p-3 rounded-md mt-4">

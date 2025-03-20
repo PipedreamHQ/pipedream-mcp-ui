@@ -62,7 +62,7 @@ export default function UserMetadataInitializer() {
     return () => {
       // Any cleanup if needed
     }
-  }, [isLoaded, isSignedIn, user])
+  }, [isLoaded, isSignedIn, user, fetchWithCSRF])
 
   // This component doesn't render anything visible
   return null

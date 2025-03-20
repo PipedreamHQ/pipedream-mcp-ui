@@ -19,7 +19,19 @@ export function getNonce(): string {
 export function getCSRFTokenFromMeta(): string {
   if (typeof document !== 'undefined') {
     const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute('content') || '' : '';
+    if (!meta) {
+      console.warn('CSRF token meta tag not found');
+      return '';
+    }
+    
+    const token = meta.getAttribute('content') || '';
+    // Validate token format (should be alphanumeric with possible - and _)
+    if (!token || !/^[a-zA-Z0-9_-]+$/.test(token)) {
+      console.warn('Invalid CSRF token format');
+      return '';
+    }
+    
+    return token;
   }
   return '';
 }
