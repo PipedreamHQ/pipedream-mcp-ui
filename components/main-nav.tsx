@@ -57,7 +57,7 @@ export function MainNav() {
       </div>
       
       <nav className="flex w-full md:w-auto justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-300 md:ml-auto">
-        <div className="flex flex-wrap w-full justify-center items-center gap-2">
+        <div className="flex flex-wrap w-full md:w-auto justify-center items-center gap-2">
           <Link 
             href="/" 
             className={cn(
