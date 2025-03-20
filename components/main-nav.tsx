@@ -19,7 +19,6 @@ export function MainNav() {
   const isHomePage = pathname === '/'
   const isAccountsPage = pathname === '/accounts'
   const isAppDetailPage = pathname.startsWith('/app/')
-  const isClerkTestPage = pathname === '/test/clerk-metadata-test'
 
   useEffect(() => {
     if (isLoaded) {
@@ -63,20 +62,7 @@ export function MainNav() {
             Connected Accounts
           </Link>
           
-          {/* Only show Clerk Test link in debug mode */}
-          {isDebugMode && (
-            <Link 
-              href="/test/clerk-metadata-test" 
-              className={cn(
-                "px-4 py-2 rounded-md font-medium transition-colors text-sm",
-                isClerkTestPage
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted hover:bg-muted/80 text-foreground"
-              )}
-            >
-              Clerk Test
-            </Link>
-          )}
+          {/* No debug links needed anymore */}
         </nav>
         <UserButton />
         <ThemeToggle />

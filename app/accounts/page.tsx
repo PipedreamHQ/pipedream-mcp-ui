@@ -36,14 +36,8 @@ export default function AccountsPage() {
   const fetchAccounts = async () => {
     setLoading(true)
     try {
-      // First check if our environment variables are correctly configured
-      const envCheck = await fetch("/api/check-env")
-      const envData = await envCheck.json()
-      
       // Only log in debug mode
       if (debugMode) {
-        console.log("Environment check:", envData)
-        
         // Log current user information from Clerk's client-side hooks
         console.log("Current user from Clerk client:", { 
           userId, 
@@ -171,20 +165,8 @@ export default function AccountsPage() {
   // Helper function to test Pipedream API directly - only shown in debug mode
   const testPipedreamApi = async () => {
     try {
-      // First test connection through the check-env endpoint
-      const response = await fetch(`/api/check-env?includePipedreamTest=true`)
-      const data = await response.json()
-      
       if (debugMode) {
-        console.log("Pipedream API test result:", data)
-        
-        // Log current user info from client side
-        console.log("Current user info from client:", {
-          clerkUserId: userId,
-          externalUserId: data.pipedream?.externalUserId ? "Set in ENV" : "Using Clerk ID"
-        })
-        
-        // Then try the accounts endpoint explicitly
+        // Then try the accounts endpoint directly
         console.log("Testing accounts endpoint directly...")
       }
       
@@ -201,8 +183,8 @@ export default function AccountsPage() {
       
       toast({
         title: "Pipedream API test",
-        description: `Test ${data.pipedreamTest?.success ? 'succeeded' : 'failed'}. Found ${accountsCount} accounts. Check console for details.`,
-        variant: data.pipedreamTest?.success ? "default" : "destructive",
+        description: `Test completed. Found ${accountsCount} accounts. Check console for details.`,
+        variant: "default"
       })
     } catch (error) {
       if (debugMode) {
