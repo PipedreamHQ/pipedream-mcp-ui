@@ -331,33 +331,30 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   >
                     Claude
                   </TabsTrigger>
-                  {/* Using separate div elements with tooltips for disabled tabs */}
-                  <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent">
-                      Windsurf
-                    </div>
-                    <div className="absolute left-1/2 transform -translate-x-1/2 top-10 bg-black text-white text-xs rounded py-1 px-2 hidden group-hover:block z-[100] whitespace-nowrap shadow-md">
-                      Coming soon
-                    </div>
-                  </div>
+                  {/* Using button elements with title attributes for native tooltips */}
+                  <button 
+                    className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent" 
+                    disabled 
+                    title="Coming soon"
+                  >
+                    Windsurf
+                  </button>
                   
-                  <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent">
-                      TypeScript
-                    </div>
-                    <div className="absolute left-1/2 transform -translate-x-1/2 top-10 bg-black text-white text-xs rounded py-1 px-2 hidden group-hover:block z-[100] whitespace-nowrap shadow-md">
-                      Coming soon
-                    </div>
-                  </div>
+                  <button 
+                    className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent" 
+                    disabled 
+                    title="Coming soon"
+                  >
+                    TypeScript
+                  </button>
                   
-                  <div className="relative group">
-                    <div className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent">
-                      Python
-                    </div>
-                    <div className="absolute left-1/2 transform -translate-x-1/2 top-10 bg-black text-white text-xs rounded py-1 px-2 hidden group-hover:block z-[100] whitespace-nowrap shadow-md">
-                      Coming soon
-                    </div>
-                  </div>
+                  <button 
+                    className="px-4 py-2 rounded-md font-medium text-sm min-w-[80px] text-center opacity-60 bg-transparent" 
+                    disabled 
+                    title="Coming soon"
+                  >
+                    Python
+                  </button>
                 </TabsList>
               </div>
             </TooltipProvider>
