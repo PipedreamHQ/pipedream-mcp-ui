@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import Link from "next/link"
 import type { App } from "@/lib/supabase"
 
@@ -299,57 +306,79 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
             </Select>
           </div>
           
-          {/* Desktop Tabs - hidden on mobile */}
-          <TabsList className="mb-6 w-full md:max-w-3xl hidden md:flex items-center overflow-x-auto">
-            <TabsTrigger 
-              value="cursor" 
-              className="text-sm flex-1 h-10 min-w-[80px] flex items-center justify-center transition-all duration-300"
-            >
-              Cursor
-            </TabsTrigger>
-            <TabsTrigger 
-              value="claude" 
-              className="text-sm flex-1 h-10 min-w-[80px] flex items-center justify-center transition-all duration-300"
-            >
-              Claude
-            </TabsTrigger>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
-              <TabsTrigger 
-                value="windsurf" 
-                disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
-              >
-                Windsurf
-              </TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
-                Coming soon
-              </div>
-            </div>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
-              <TabsTrigger 
-                value="typescript" 
-                disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
-              >
-                TypeScript
-              </TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
-                Coming soon
-              </div>
-            </div>
-            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center h-10">
-              <TabsTrigger 
-                value="python" 
-                disabled 
-                className="opacity-60 cursor-not-allowed text-sm h-full w-full flex items-center justify-center transition-all duration-300"
-              >
-                Python
-              </TabsTrigger>
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6 bg-background text-foreground text-xs rounded shadow-md py-1 px-2 hidden group-hover:block border z-50 whitespace-nowrap transition-opacity duration-200">
-                Coming soon
-              </div>
-            </div>
-          </TabsList>
+          {/* Desktop Tabs - hidden on mobile, styled like main-nav */}
+          <div className="hidden md:block mb-6">
+            <TooltipProvider>
+              <nav className="flex justify-start rounded-lg p-1 bg-muted/30 w-fit overflow-hidden transition-all duration-300">
+                <div className="flex items-center gap-2">
+                  <TabsTrigger 
+                    value="cursor" 
+                    className={cn(
+                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center",
+                      currentTab === "cursor" 
+                        ? "bg-primary text-primary-foreground shadow-sm" 
+                        : "hover:bg-muted/80 text-foreground"
+                    )}
+                  >
+                    Cursor
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="claude" 
+                    className={cn(
+                      "px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center",
+                      currentTab === "claude" 
+                        ? "bg-primary text-primary-foreground shadow-sm" 
+                        : "hover:bg-muted/80 text-foreground"
+                    )}
+                  >
+                    Claude
+                  </TabsTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger 
+                        value="windsurf" 
+                        disabled 
+                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
+                      >
+                        Windsurf
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Coming soon</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger 
+                        value="typescript" 
+                        disabled 
+                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
+                      >
+                        TypeScript
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Coming soon</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger 
+                        value="python" 
+                        disabled 
+                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
+                      >
+                        Python
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Coming soon</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </nav>
+            </TooltipProvider>
+          </div>
 
           <TabsContent value="cursor" className="space-y-4 animate-in fade-in-50 transition-all duration-300">
             <ol className="space-y-2 list-decimal list-inside text-sm sm:text-base">
