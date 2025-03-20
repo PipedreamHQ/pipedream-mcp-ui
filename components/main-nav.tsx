@@ -33,9 +33,9 @@ export function MainNav() {
   return (
     <div className="mb-6 md:mb-10 mt-0 relative transition-all duration-300">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-        <div className="space-y-2 mb-4 md:mb-0 md:max-w-2xl">
+        <div className="space-y-2 mb-4 md:mb-0 md:max-w-3xl">
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight transition-all duration-300">AI developer toolkit from Pipedream</h1>
-          <p className="text-sm md:text-base text-muted-foreground transition-all duration-300">
+          <p className="text-sm md:text-base text-muted-foreground transition-all duration-300 md:pr-8">
             Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
             <Link 
               href="https://pipedream.com/connect"
@@ -56,7 +56,7 @@ export function MainNav() {
         </div>
       </div>
       
-      <nav className="flex w-full md:w-auto justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-300 md:ml-auto">
+      <nav className="flex w-full md:max-w-fit justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-300 md:ml-auto">
         <div className="flex flex-wrap w-full md:w-auto justify-center items-center gap-2">
           <Link 
             href="/" 
