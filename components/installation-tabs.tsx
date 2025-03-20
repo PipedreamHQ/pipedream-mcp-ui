@@ -6,6 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Copy, Check, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth, useUser } from "@clerk/nextjs"
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem,
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select"
 import Link from "next/link"
 import type { App } from "@/lib/supabase"
 
@@ -17,6 +24,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
   const [copied, setCopied] = useState(false)
   const [showUrl, setShowUrl] = useState(false)
   const [externalUserId, setExternalUserId] = useState<string | null>(null)
+  const [currentTab, setCurrentTab] = useState("cursor")
   const { isLoaded, userId } = useAuth()
   const { user } = useUser()
 
@@ -274,8 +282,25 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
         <CardDescription className="text-sm sm:text-base">Select your preferred client to install the MCP server</CardDescription>
       </CardHeader>
       <CardContent className="sm:px-6">
-        <Tabs defaultValue="cursor" className="transition-all duration-300">
-          <TabsList className="mb-6 w-full md:max-w-3xl flex items-stretch overflow-x-auto">
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="transition-all duration-300">
+          {/* Mobile Select Dropdown - only visible on small screens */}
+          <div className="md:hidden mb-6">
+            <Select value={currentTab} onValueChange={setCurrentTab}>
+              <SelectTrigger className="w-full text-sm">
+                <SelectValue placeholder="Select client" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cursor">Cursor</SelectItem>
+                <SelectItem value="claude">Claude</SelectItem>
+                <SelectItem value="windsurf" disabled>Windsurf (Coming soon)</SelectItem>
+                <SelectItem value="typescript" disabled>TypeScript (Coming soon)</SelectItem>
+                <SelectItem value="python" disabled>Python (Coming soon)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Desktop Tabs - hidden on mobile */}
+          <TabsList className="mb-6 w-full md:max-w-3xl hidden md:flex items-stretch overflow-x-auto">
             <TabsTrigger 
               value="cursor" 
               className="text-sm flex-1 h-10 min-w-[80px] transition-all duration-300"
@@ -300,7 +325,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                 Coming soon
               </div>
             </div>
-            <div className="relative group flex-1 min-w-[80px] hidden md:flex items-center justify-center">
+            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center">
               <TabsTrigger 
                 value="typescript" 
                 disabled 
@@ -312,7 +337,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                 Coming soon
               </div>
             </div>
-            <div className="relative group flex-1 min-w-[80px] hidden md:flex items-center justify-center">
+            <div className="relative group flex-1 min-w-[80px] flex items-center justify-center">
               <TabsTrigger 
                 value="python" 
                 disabled 
