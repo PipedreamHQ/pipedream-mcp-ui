@@ -55,46 +55,47 @@ export function MainNav() {
         </div>
         
         <nav className="flex w-full md:w-auto justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
-        <div className="flex flex-wrap w-full justify-center items-center gap-2">
-          <Link 
-            href="/" 
-            className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-40 text-center",
-              isHomePage || isAppDetailPage
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "hover:bg-muted/80 text-foreground"
-            )}
-          >
-            MCP Servers
-          </Link>
-          <Link 
-            href="/accounts" 
-            className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-48 text-center",
-              isAccountsPage
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "hover:bg-muted/80 text-foreground"
-            )}
-          >
-            Connected Accounts
-          </Link>
-          
-          {/* Only show Clerk Test link in debug mode */}
-          {isDebugMode && (
+          <div className="flex flex-wrap w-full justify-center items-center gap-2">
             <Link 
-              href="/test/clerk-metadata-test" 
+              href="/" 
               className={cn(
-                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-auto text-center",
-                isClerkTestPage
+                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-40 text-center",
+                isHomePage || isAppDetailPage
                   ? "bg-primary text-primary-foreground shadow-sm" 
                   : "hover:bg-muted/80 text-foreground"
               )}
             >
-              Clerk Test
+              MCP Servers
             </Link>
-          )}
-        </div>
-      </nav>
+            <Link 
+              href="/accounts" 
+              className={cn(
+                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-48 text-center",
+                isAccountsPage
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "hover:bg-muted/80 text-foreground"
+              )}
+            >
+              Connected Accounts
+            </Link>
+            
+            {/* Only show Clerk Test link in debug mode */}
+            {isDebugMode && (
+              <Link 
+                href="/test/clerk-metadata-test" 
+                className={cn(
+                  "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-auto text-center",
+                  isClerkTestPage
+                    ? "bg-primary text-primary-foreground shadow-sm" 
+                    : "hover:bg-muted/80 text-foreground"
+                )}
+              >
+                Clerk Test
+              </Link>
+            )}
+          </div>
+        </nav>
+      </div>
     </div>
   )
 }
