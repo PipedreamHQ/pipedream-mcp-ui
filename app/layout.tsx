@@ -54,7 +54,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={GeistSans.variable} suppressHydrationWarning scroll-smooth>
+      <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
         <body className="font-sans transition-all duration-200">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <ClerkLoaded>
