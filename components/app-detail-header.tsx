@@ -14,7 +14,7 @@ export default function AppDetailHeader({ app }: AppDetailHeaderProps) {
     : `/placeholder.svg?height=64&width=64`
 
   return (
-    <div className="flex items-start gap-6">
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
       <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-white flex items-center justify-center shadow-sm">
         <Image
           src={imageUrl || "/placeholder.svg"}
@@ -25,24 +25,26 @@ export default function AppDetailHeader({ app }: AppDetailHeaderProps) {
         />
       </div>
 
-      <div className="flex-grow">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{app.name} MCP Server</h1>
-            <p className="text-lg text-muted-foreground mt-2 max-w-3xl">{app.description}</p>
+      <div className="flex-grow w-full">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-bold">{app.name} MCP Server</h1>
+            <p className="text-base md:text-lg text-muted-foreground mt-2 max-w-3xl">{app.description}</p>
           </div>
           
           {app.api_docs_url && (
-            <Button variant="outline" size="sm" className="flex-shrink-0" asChild>
-              <a href={app.api_docs_url} target="_blank" rel="noopener noreferrer">
-                <BookOpen className="mr-2 h-4 w-4" />
-                View {app.name} docs
-              </a>
-            </Button>
+            <div className="flex justify-center md:justify-start">
+              <Button variant="outline" size="sm" className="flex-shrink-0" asChild>
+                <a href={app.api_docs_url} target="_blank" rel="noopener noreferrer">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  View {app.name} docs
+                </a>
+              </Button>
+            </div>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
           {app.categories &&
             app.categories.map((category, index) => (
               <span key={`${category}-${index}`} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">

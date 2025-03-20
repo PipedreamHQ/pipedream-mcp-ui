@@ -198,7 +198,7 @@ export default async function AppDetailPage({ params }: { params: { slug: string
           <Link href="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to MCP servers
+              All MCP servers
             </Button>
           </Link>
         </div>
