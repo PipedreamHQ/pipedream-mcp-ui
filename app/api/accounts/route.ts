@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createBackendClient } from "@pipedream/sdk/server"
 import { getAuth } from "@clerk/nextjs/server"
+import { ProjectEnvironment } from "@/lib/utils"
 import { getPipedreamExternalUserId } from "@/lib/clerk"
 
 // Initialize Pipedream client
 const getPipedreamClient = () => {
   return createBackendClient({
     apiHost: process.env.PIPEDREAM_API_HOST,
-    environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+    environment: (process.env.PIPEDREAM_ENVIRONMENT as ProjectEnvironment) || "development",
     credentials: {
       clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || process.env.CLIENT_ID || "",
       clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || process.env.CLIENT_SECRET || "",
@@ -41,7 +42,7 @@ async function getExternalUserId(req: NextRequest) {
     
     // Only log headers for debugging in debug mode
     if (debugMode) {
-      const headers = {}
+      const headers: Record<string, string> = {}
       req.headers.forEach((value, key) => {
         if (!key.toLowerCase().includes('cookie') && !key.toLowerCase().includes('auth')) {
           headers[key] = value
@@ -176,7 +177,7 @@ export async function GET(request: NextRequest) {
     // Log credentials being used (exclude sensitive values)
     if (debugMode) {
       console.log("Using Pipedream client with:", {
-        environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+        environment: (process.env.PIPEDREAM_ENVIRONMENT as ProjectEnvironment) || "development",
         hasClientId: !!process.env.PIPEDREAM_OAUTH_CLIENT_ID,
         hasClientSecret: !!process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,
         projectId: process.env.PIPEDREAM_PROJECT_ID,

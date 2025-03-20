@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -33,7 +33,7 @@ export default function AccountsPage() {
   const router = useRouter()
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     setLoading(true)
     try {
       // Only log in debug mode
@@ -93,7 +93,7 @@ export default function AccountsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, debugMode, isLoaded, setLoading, setAccounts])
 
   const deleteAccount = async (accountId: string) => {
     setDeletingId(accountId)
@@ -132,7 +132,7 @@ export default function AccountsPage() {
       // Only fetch accounts if user is authenticated
       fetchAccounts()
     }
-  }, [isLoaded, userId])
+  }, [isLoaded, userId, fetchAccounts])
   
   // Show loading state while clerk auth is loading
   if (!isLoaded) {
@@ -260,7 +260,7 @@ export default function AccountsPage() {
                   <div className="text-center py-10">
                     <h3 className="text-lg font-medium mb-2">No connected accounts</h3>
                     <p className="text-muted-foreground mb-4">
-                      You haven't connected any accounts yet.
+                      You haven&apos;t connected any accounts yet.
                     </p>
                     <Button onClick={() => router.push("/")}>
                       Browse MCP servers

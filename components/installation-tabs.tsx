@@ -204,8 +204,8 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
 
           <TabsContent value="cursor" className="space-y-4">
             <ol className="space-y-4 list-decimal list-inside">
-              <li>Navigate to "Settings", then "Cursor Settings"</li>
-              <li>Select "MCP" on the left</li>
+              <li>Navigate to &quot;Settings&quot;, then &quot;Cursor Settings&quot;</li>
+              <li>Select &quot;MCP&quot; on the left</li>
               <li>Add a new MCP server by pasting the URL below:</li>
             </ol>
 
@@ -216,7 +216,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
             <ol className="space-y-4 list-decimal list-inside">
               <li>Open Claude AI</li>
               <li>Go to Settings → Advanced</li>
-              <li>Enable "External Tools"</li>
+              <li>Enable &quot;External Tools&quot;</li>
               <li>Add new MCP server with this URL:</li>
             </ol>
 
@@ -227,7 +227,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
             <ol className="space-y-4 list-decimal list-inside">
               <li>Open Windsurf Browser</li>
               <li>Navigate to Extensions</li>
-              <li>Enable "AI Tools"</li>
+              <li>Enable &quot;AI Tools&quot;</li>
               <li>Add new MCP server with this URL:</li>
             </ol>
 

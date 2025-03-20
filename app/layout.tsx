@@ -3,9 +3,12 @@ import type { Metadata } from "next"
 import { GeistSans } from 'geist/font/sans'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
-import RedirectHandler from "@/components/redirect-handler"
+// Use ClerkProvider directly as shown in the official example
+import { ClerkProvider } from "@clerk/nextjs"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
+import RedirectHandler from "@/components/redirect-handler"
+import CSRFProvider from "@/components/csrf-provider"
+import { csrfToken } from "@/lib/csrf"
 
 // Use GeistSans as our primary font
 
@@ -38,33 +41,37 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Generate CSRF token for the page
+  const token = await csrfToken();
+  
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      appearance={{
-        baseTheme: undefined, // Let the app control the theme
-        elements: {
-          formButtonPrimary: "bg-primary hover:bg-primary/90",
-          card: "shadow-lg",
-        },
-      }}
-    >
-      <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
-        <body className="font-sans">
+    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
+      <head>
+        <meta name="csrf-token" content={token} />
+      </head>
+      <body className="font-sans">
+        <ClerkProvider 
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          appearance={{
+            variables: {
+              // No special variables needed for now
+            },
+          }}
+        >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <ClerkLoaded>
+            <CSRFProvider>
               <UserMetadataInitializer />
-            </ClerkLoaded>
-            <RedirectHandler />
-            {children}
+              <RedirectHandler />
+              {children}
+            </CSRFProvider>
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   )
 }

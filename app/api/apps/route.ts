@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { createBackendClient } from "@pipedream/sdk/server"
+import { ProjectEnvironment } from "@/lib/utils"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -58,11 +59,8 @@ export async function GET(request: Request) {
       if (query) {
         // Properly sanitize input and use parameterized queries
         const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&'); // Escape special characters
-        supabaseQuery = supabaseQuery.or([
-          { APP_NAME: { ilike: `%${sanitizedQuery}%` } },
-          { APP_NAME_SLUG: { ilike: `%${sanitizedQuery}%` } },
-          { APP_DESCRIPTION: { ilike: `%${sanitizedQuery}%` } }
-        ])
+        // Using string format for filter which works with Supabase syntax
+        supabaseQuery = supabaseQuery.or(`APP_NAME.ilike.%${sanitizedQuery}%,APP_NAME_SLUG.ilike.%${sanitizedQuery}%,APP_DESCRIPTION.ilike.%${sanitizedQuery}%`)
       }
 
       // Apply category filter if category exists
@@ -154,7 +152,7 @@ export async function GET(request: Request) {
     }
 
     const pd = createBackendClient({
-      environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+      environment: (process.env.PIPEDREAM_ENVIRONMENT as ProjectEnvironment) || "development",
       credentials: {
         clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID,
         clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET,

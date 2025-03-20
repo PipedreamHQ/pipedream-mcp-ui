@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { createBackendClient } from "@pipedream/sdk/server"
+import { ProjectEnvironment } from "@/lib/utils"
 
 export async function GET() {
   try {
@@ -27,7 +28,7 @@ export async function GET() {
     console.log("No categories found in Supabase, falling back to Pipedream API")
 
     const pd = createBackendClient({
-      environment: process.env.PIPEDREAM_ENVIRONMENT || "development",
+      environment: (process.env.PIPEDREAM_ENVIRONMENT as ProjectEnvironment) || "development",
       credentials: {
         clientId: process.env.PIPEDREAM_OAUTH_CLIENT_ID || "",
         clientSecret: process.env.PIPEDREAM_OAUTH_CLIENT_SECRET || "",

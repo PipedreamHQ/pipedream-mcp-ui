@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import AppCard from "./app-card"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -29,7 +29,7 @@ export default function AppGrid() {
   const [currentPage, setCurrentPage] = useState(1)
 
   // Function to fetch apps
-  const fetchApps = async (page = 1, append = false) => {
+  const fetchApps = useCallback(async (page = 1, append = false) => {
     if (page > 1) {
       setLoadingMore(true)
     } else {
@@ -105,12 +105,12 @@ export default function AppGrid() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }
+  }, [searchQuery, categoryFilter, setLoading, setLoadingMore, setError, setErrorDetails, setApps, setPageInfo, setDataSource, setCurrentPage])
 
   // Initial load and when search or category changes
   useEffect(() => {
     fetchApps(1, false)
-  }, [searchQuery, categoryFilter])
+  }, [searchQuery, categoryFilter, fetchApps])
 
   // Load more function
   const handleLoadMore = () => {

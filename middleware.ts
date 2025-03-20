@@ -1,25 +1,18 @@
 // middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest, NextFetchEvent } from 'next/server'
-import { clerkMiddleware, getAuth } from '@clerk/nextjs/server'
-
-// Generate a nonce for CSP
-function generateNonce() {
-  return Buffer.from(crypto.randomUUID()).toString('base64');
-}
+import { clerkMiddleware } from '@clerk/nextjs/server'
+import { validateCSRFToken } from './lib/csrf';
 
 // Create a custom middleware that applies security headers
-export function middleware(request: NextRequest, event: NextFetchEvent) {
-  // Generate a nonce for this request
-  const nonce = generateNonce();
-  
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Check if we're in debug mode
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
   
   // Block access to /test page when not in debug mode
   if (!debugMode && request.nextUrl.pathname.startsWith('/test')) {
     const redirectResponse = NextResponse.redirect(new URL('/', request.url));
-    addSecurityHeaders(redirectResponse, nonce);
+    addSecurityHeaders(redirectResponse);
     return redirectResponse;
   }
   
@@ -27,24 +20,49 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
   if (!debugMode && request.nextUrl.pathname.startsWith('/api/check-env') && 
       request.nextUrl.searchParams.has('includePipedreamTest')) {
     const redirectResponse = NextResponse.redirect(new URL('/api/check-env', request.url));
-    addSecurityHeaders(redirectResponse, nonce);
+    addSecurityHeaders(redirectResponse);
     return redirectResponse;
   }
   
+  // CSRF Protection for state-changing methods
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
+    // Skip CSRF validation for:
+    // 1. Webhook endpoints
+    // 2. CSRF setup endpoint itself
+    if (!request.nextUrl.pathname.startsWith('/api/webhooks/') && 
+        !request.nextUrl.pathname.startsWith('/api/csrf')) {
+      try {
+        const csrfValid = await validateCSRFToken(request);
+        if (!csrfValid) {
+          return NextResponse.json(
+            { 
+              error: 'Invalid CSRF token', 
+              message: 'Please include a valid CSRF token in the X-CSRF-Token header or request body. Get a token from /api/csrf.'
+            },
+            { status: 403 }
+          );
+        }
+      } catch (error) {
+        console.error('CSRF validation error:', error);
+        return NextResponse.json(
+          { error: 'CSRF validation failed' },
+          { status: 403 }
+        );
+      }
+    }
+  }
+  
   // Apply Clerk middleware
-  const clerkHandler = clerkMiddleware();
+  const clerkResponse = clerkMiddleware(request, event);
   
-  // Get the result of Clerk's middleware
-  const clerkResponse = clerkHandler(request, event);
-  
-  // Create a wrapper for the response to add our CSP headers
+  // Add security headers to the response
   return Promise.resolve(clerkResponse).then(response => {
     if (response instanceof Response) {
       // Clone the response to modify headers
       const headers = new Headers(response.headers);
       
-      // Add CSP and security headers
-      headers.set('Content-Security-Policy', generateCSPString(nonce));
+      // Add security headers
+      headers.set('Content-Security-Policy', generateCSPString());
       headers.set('X-Content-Type-Options', 'nosniff');
       headers.set('X-Frame-Options', 'SAMEORIGIN');
       headers.set('X-XSS-Protection', '1; mode=block');
@@ -62,9 +80,9 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
 }
 
 // Helper function to add security headers
-function addSecurityHeaders(response: NextResponse, nonce: string) {
+function addSecurityHeaders(response: NextResponse) {
   // Add CSP header to response
-  response.headers.set('Content-Security-Policy', generateCSPString(nonce));
+  response.headers.set('Content-Security-Policy', generateCSPString());
   
   // Add other security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -74,25 +92,51 @@ function addSecurityHeaders(response: NextResponse, nonce: string) {
 }
 
 // Helper function to generate CSP string
-function generateCSPString(nonce: string): string {
+function generateCSPString(): string {
   // Apply Content Security Policy
   const cspHeader = {
-    // Default fallback - deny all sources by default
+    // Default fallback - most restrictive
     'default-src': ["'self'"],
     
-    // Script sources - self and Clerk
-    // XXX any way to avoid unsafe-inline?
-    'script-src': ["'self'", "'strict-dynamic'", `'nonce-${nonce}'`, "https://*.clerk.accounts.dev", "*.clerk.app", "https://clerk.dev", "'unsafe-inline'"],
+    // Script sources - self, Clerk, and dynamic script loading
+    'script-src': [
+      "'self'", 
+      "'unsafe-inline'",  // Allow inline scripts
+      "'unsafe-eval'",    // Allow eval for frameworks that need it
+      "https://*.clerk.accounts.dev", 
+      "*.clerk.app", 
+      "https://clerk.dev", 
+      "https://clerk.pipedream.com", 
+      "https://*.clerk.pipedream.com"
+    ],
     
-    // Style sources - allow inline styles needed by many frameworks
-    // XXX any way to avoid unsafe-inline?
+    // Style sources - allow inline styles needed by frameworks
     'style-src': ["'self'", "'unsafe-inline'"],
     
     // Image sources
-    'img-src': ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://pipedream.com", "https://*.clerk.accounts.dev", "https://*.clerk.app"],
+    'img-src': [
+      "'self'", 
+      "data:", 
+      "blob:", 
+      "https://res.cloudinary.com", 
+      "https://pipedream.com", 
+      "https://*.clerk.accounts.dev", 
+      "https://*.clerk.app", 
+      "https://clerk.pipedream.com", 
+      "https://*.clerk.pipedream.com",
+      "https://img.clerk.com"
+    ],
     
     // Connect sources for API calls
-    'connect-src': ["'self'", "https://mcp.pipedream.com", "https://*.clerk.accounts.dev", "https://*.clerk.app", "wss://*.clerk.accounts.dev"],
+    'connect-src': [
+      "'self'", 
+      "https://mcp.pipedream.com", 
+      "https://*.clerk.accounts.dev", 
+      "https://*.clerk.app", 
+      "https://clerk.pipedream.com", 
+      "https://*.clerk.pipedream.com", 
+      "wss://*.clerk.accounts.dev"
+    ],
     
     // Font sources
     'font-src': ["'self'", "data:"],
@@ -101,7 +145,13 @@ function generateCSPString(nonce: string): string {
     'media-src': ["'self'"],
     
     // Frame sources
-    'frame-src': ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.app"],
+    'frame-src': [
+      "'self'", 
+      "https://*.clerk.accounts.dev", 
+      "https://*.clerk.app", 
+      "https://clerk.pipedream.com", 
+      "https://*.clerk.pipedream.com"
+    ],
     
     // Manifest sources
     'manifest-src': ["'self'"],
@@ -113,10 +163,19 @@ function generateCSPString(nonce: string): string {
     'base-uri': ["'self'"],
     
     // Form action destinations
-    'form-action': ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.app"],
+    'form-action': [
+      "'self'", 
+      "https://*.clerk.accounts.dev", 
+      "https://*.clerk.app", 
+      "https://clerk.pipedream.com", 
+      "https://*.clerk.pipedream.com"
+    ],
     
     // Frame ancestors - prevent clickjacking
     'frame-ancestors': ["'self'"],
+    
+    // Worker sources
+    'worker-src': ["'self'", "blob:"],
     
     // Upgrade insecure requests
     'upgrade-insecure-requests': [],
