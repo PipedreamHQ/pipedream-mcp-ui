@@ -144,7 +144,7 @@ export default function AccountsPage() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-        <main className="container mx-auto px-4 py-12">
+        <main className="container mx-auto px-4 pt-8 pb-12">
           <MainNav />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
             {[1, 2, 3].map(i => (
@@ -235,7 +235,7 @@ export default function AccountsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 pt-8 pb-12">
         <MainNav />
         
         {/* If not authenticated, show sign in prompt */}

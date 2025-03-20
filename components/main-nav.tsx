@@ -31,8 +31,14 @@ export function MainNav() {
   }, [isLoaded, userId])
 
   return (
-    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 md:gap-4 mb-6 md:mb-10">
-      <div className="space-y-2">
+    <div className="mb-6 md:mb-10 mt-0 relative">
+      {/* User buttons fixed at top right on mobile */}
+      <div className="absolute top-0 right-0 flex items-center gap-2 z-10">
+        <UserButton />
+        <ThemeToggle />
+      </div>
+      
+      <div className="space-y-2 mb-6">
         <h1 className="text-2xl md:text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
         <p className="text-sm md:text-base text-muted-foreground">
           Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
@@ -46,12 +52,13 @@ export function MainNav() {
           </Link>
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2 md:gap-4">
-        <nav className="flex flex-wrap items-center gap-2 border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
+      
+      <nav className="flex w-full max-w-full justify-center md:justify-start border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
+        <div className="flex flex-wrap w-full md:w-auto justify-center items-center gap-2">
           <Link 
             href="/" 
             className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-32 text-center",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-36 text-center",
               isHomePage || isAppDetailPage
                 ? "bg-primary text-primary-foreground shadow-sm" 
                 : "hover:bg-muted/80 text-foreground"
@@ -62,7 +69,7 @@ export function MainNav() {
           <Link 
             href="/accounts" 
             className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-32 text-center",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-36 text-center",
               isAccountsPage
                 ? "bg-primary text-primary-foreground shadow-sm" 
                 : "hover:bg-muted/80 text-foreground"
@@ -76,7 +83,7 @@ export function MainNav() {
             <Link 
               href="/test/clerk-metadata-test" 
               className={cn(
-                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm",
+                "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-auto text-center",
                 isClerkTestPage
                   ? "bg-primary text-primary-foreground shadow-sm" 
                   : "hover:bg-muted/80 text-foreground"
@@ -85,12 +92,8 @@ export function MainNav() {
               Clerk Test
             </Link>
           )}
-        </nav>
-        <div className="flex items-center gap-2">
-          <UserButton />
-          <ThemeToggle />
         </div>
-      </div>
+      </nav>
     </div>
   )
 }
