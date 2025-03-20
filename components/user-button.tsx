@@ -41,9 +41,8 @@ export function UserButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
-            <UserIcon className="h-4 w-4" />
-            Account
+          <Button variant="outline" size="icon" className="gap-2">
+            <UserIcon className="h-[1.2rem] w-[1.2rem]" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -66,8 +65,8 @@ export function UserButton() {
 
   return (
     <Link href={signInUrl}>
-      <Button variant="outline" size="sm">
-        Sign in
+      <Button variant="outline" size="icon">
+        <UserIcon className="h-[1.2rem] w-[1.2rem]" />
       </Button>
     </Link>
   )

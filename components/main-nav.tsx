@@ -53,12 +53,12 @@ export function MainNav() {
         </p>
       </div>
       
-      <nav className="flex w-full max-w-full justify-center md:justify-start border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
-        <div className="flex flex-wrap w-full md:w-auto justify-center items-center gap-2">
+      <nav className="flex w-full md:w-auto max-w-full justify-center md:justify-start border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
+        <div className="flex flex-wrap w-full justify-center items-center gap-2">
           <Link 
             href="/" 
             className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-36 text-center",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-40 text-center",
               isHomePage || isAppDetailPage
                 ? "bg-primary text-primary-foreground shadow-sm" 
                 : "hover:bg-muted/80 text-foreground"
@@ -69,7 +69,7 @@ export function MainNav() {
           <Link 
             href="/accounts" 
             className={cn(
-              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-36 text-center",
+              "px-3 py-1 md:px-4 md:py-2 rounded-md font-medium transition-colors text-xs md:text-sm w-full md:w-48 text-center",
               isAccountsPage
                 ? "bg-primary text-primary-foreground shadow-sm" 
                 : "hover:bg-muted/80 text-foreground"
