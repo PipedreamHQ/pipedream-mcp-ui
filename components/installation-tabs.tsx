@@ -331,48 +331,54 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
                   >
                     Claude
                   </TabsTrigger>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TabsTrigger 
-                        value="windsurf" 
-                        disabled 
-                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
-                      >
-                        Windsurf
-                      </TabsTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Coming soon</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TabsTrigger 
-                        value="typescript" 
-                        disabled 
-                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
-                      >
-                        TypeScript
-                      </TabsTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Coming soon</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TabsTrigger 
-                        value="python" 
-                        disabled 
-                        className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-not-allowed"
-                      >
-                        Python
-                      </TabsTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Coming soon</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <div className="relative">
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger 
+                          value="windsurf" 
+                          disabled 
+                          className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-help"
+                        >
+                          Windsurf
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={5}>
+                        Coming soon
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="relative">
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger 
+                          value="typescript" 
+                          disabled 
+                          className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-help"
+                        >
+                          TypeScript
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={5}>
+                        Coming soon
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="relative">
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger 
+                          value="python" 
+                          disabled 
+                          className="px-4 py-2 rounded-md font-medium transition-all duration-300 text-sm min-w-[80px] text-center opacity-60 cursor-help"
+                        >
+                          Python
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={5}>
+                        Coming soon
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </TabsList>
               </div>
             </TooltipProvider>
