@@ -38,22 +38,23 @@ export function MainNav() {
         <ThemeToggle />
       </div>
       
-      <div className="space-y-2 mb-6">
-        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
-          <Link 
-            href="https://pipedream.com/connect"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:underline font-semibold"
-          >
-            Pipedream Connect
-          </Link>
-        </p>
-      </div>
-      
-      <nav className="flex w-full md:w-auto max-w-full justify-center md:justify-start border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+        <div className="space-y-2 mb-6 md:mb-0 md:max-w-2xl">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
+            Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
+            <Link 
+              href="https://pipedream.com/connect"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline font-semibold"
+            >
+              Pipedream Connect
+            </Link>
+          </p>
+        </div>
+        
+        <nav className="flex w-full md:w-auto justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-200">
         <div className="flex flex-wrap w-full justify-center items-center gap-2">
           <Link 
             href="/" 
