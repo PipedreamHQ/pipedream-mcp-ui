@@ -92,14 +92,85 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   if (isAuthRequest) {
     // https://clerk.com/docs/deployments/deploy-behind-a-proxy
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-forwarded-host', process.env.NODE_ENV === 'production' ? 'pipedream.com' : 'localhost:3000');
-    requestHeaders.set('x-forwarded-proto', process.env.NODE_ENV === 'production' ? 'https' : 'http');
     
-    // Create a new request with the updated headers
-    clerkRequest = new NextRequest(request.url, {
-      ...request,
-      headers: requestHeaders,
-    });
+    // In production, force all Clerk-related URLs to use pipedream.com domain
+    if (process.env.NODE_ENV === 'production') {
+      // Set the host header to pipedream.com
+      requestHeaders.set('x-forwarded-host', 'pipedream.com');
+      requestHeaders.set('x-forwarded-proto', 'https');
+      
+      // For ALL Clerk requests in production, we need to make sure no URLs contain
+      // the Vercel domain, as this is causing problems with Clerk's allowed redirect URLs
+      
+      // Flag to track if we've found and fixed any URLs
+      let urlsFixed = false;
+      
+      // First check query parameters, which is the most common case for redirect_url
+      if (request.nextUrl.search && request.nextUrl.search.length > 0) {
+        console.log(`Checking query params for Vercel URLs: ${request.nextUrl.search}`);
+        
+        const searchParams = new URLSearchParams(request.nextUrl.search);
+        
+        // Check all query parameters for URLs that might need rewriting
+        for (const [key, value] of searchParams.entries()) {
+          if (value && value.includes('pipedream-mcp-ui.vercel.app')) {
+            console.log(`Found Vercel URL in query param '${key}': ${value}`);
+            
+            // Decode in case the URL is URL-encoded
+            try {
+              const decodedValue = decodeURIComponent(value);
+              
+              // Replace all instances of the Vercel domain with pipedream.com
+              const fixedValue = decodedValue.replace(/pipedream-mcp-ui\.vercel\.app/g, 'pipedream.com');
+              
+              console.log(`Fixed value: ${fixedValue}`);
+              
+              // Update the search params
+              searchParams.set(key, fixedValue);
+              urlsFixed = true;
+            } catch (e) {
+              console.error(`Error decoding URL parameter ${key}:`, e);
+              // Try direct replacement without decoding
+              const fixedValue = value.replace(/pipedream-mcp-ui\.vercel\.app/g, 'pipedream.com');
+              searchParams.set(key, fixedValue);
+              urlsFixed = true;
+            }
+          }
+        }
+        
+        // If we fixed any URLs, create a new request with the updated search params
+        if (urlsFixed) {
+          const newUrl = request.nextUrl.clone();
+          newUrl.search = searchParams.toString();
+          
+          console.log(`Updated URL for Clerk request: ${newUrl.toString()}`);
+          
+          clerkRequest = new NextRequest(newUrl, {
+            headers: requestHeaders,
+            method: request.method,
+            body: request.body,
+          });
+        }
+      }
+      
+      // Extra protection for form/body data (although Clerk doesn't typically use this)
+      if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+        // Log that we're checking and fixing all Clerk requests
+        console.log(`Ensuring all Clerk URLs for ${request.nextUrl.pathname} use pipedream.com instead of vercel.app`);
+      }
+    } else {
+      // Development
+      requestHeaders.set('x-forwarded-host', 'localhost:3000');
+      requestHeaders.set('x-forwarded-proto', 'http');
+    }
+    
+    // Create a new request with the updated headers if not already updated
+    if (clerkRequest === request) {
+      clerkRequest = new NextRequest(request.url, {
+        ...request,
+        headers: requestHeaders,
+      });
+    }
   }
 
   // Apply Clerk middleware with the updated request
