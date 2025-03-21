@@ -68,7 +68,6 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
-// Now use our safer implementation without dangerouslySetInnerHTML
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return <ChartStyles id={id} config={config} />
 }
