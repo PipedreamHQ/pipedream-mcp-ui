@@ -94,6 +94,8 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     // These get passed from the pipedreamcom-proxy to Vercel,
     // then from Vercel to Clerk here
     const requestHeaders = new Headers(request.headers);
+    console.log(`x-forwarded-host: ${request.headers.get('x-forwarded-host')}`);
+    console.log(`x-forwarded-proto: ${request.headers.get('x-forwarded-proto')}`);
     requestHeaders.set('x-forwarded-host', request.headers.get('x-forwarded-host') || '');
     requestHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || '');
     
