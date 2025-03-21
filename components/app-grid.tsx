@@ -58,7 +58,7 @@ export default function AppGrid() {
         console.log("Fetching MCP servers with params:", queryParams.toString())
       }
 
-      const response = await fetch(`/api/apps?${queryParams.toString()}`)
+      const response = await fetch(`/mcp/api/apps?${queryParams.toString()}`)
       const data = await response.json()
 
       if (!response.ok) {

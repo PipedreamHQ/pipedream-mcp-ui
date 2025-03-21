@@ -60,7 +60,7 @@ export default function CSRFProvider({
           fetchOptions.headers = { 'x-nonce': nonce };
         }
         
-        const res = await fetch('/api/csrf', fetchOptions);
+        const res = await fetch('/mcp/api/csrf', fetchOptions);
         
         // Get token from header (most reliable)
         const headerToken = res.headers.get(CSRF_HEADER);

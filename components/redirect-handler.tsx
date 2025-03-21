@@ -28,7 +28,7 @@ export default function RedirectHandler() {
         }
         
         // Call our API to get the user metadata, which will create the external ID if needed
-        const response = await fetch('/api/user-metadata')
+        const response = await fetch('/mcp/api/user-metadata')
         if (response.ok) {
           const data = await response.json()
           if (data.pd_external_user_id) {
@@ -71,16 +71,25 @@ export default function RedirectHandler() {
     }
     
     // If we're signed in and on the homepage, and have a stored redirect URL, navigate to it
-    if (isSignedIn && pathname === '/' && storedRedirectUrl && storedRedirectUrl !== '/') {
+    if (isSignedIn && (pathname === '/' || pathname === '/mcp/' || pathname === '/mcp') && storedRedirectUrl && storedRedirectUrl !== '/' && storedRedirectUrl !== '/mcp/' && storedRedirectUrl !== '/mcp') {
       if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
         console.log("RedirectHandler: Redirecting to stored URL:", storedRedirectUrl)
+      }
+      
+      // Add the /mcp prefix if the path doesn't already have it and it's not an absolute URL
+      let finalRedirectUrl = storedRedirectUrl;
+      if (finalRedirectUrl && finalRedirectUrl.startsWith('/') && !finalRedirectUrl.startsWith('/mcp/') && !finalRedirectUrl.startsWith('http')) {
+        finalRedirectUrl = '/mcp' + finalRedirectUrl;
+        if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+          console.log("RedirectHandler: Added basePath to redirectUrl:", finalRedirectUrl)
+        }
       }
       
       // Clear the stored redirect URL
       window.sessionStorage.removeItem('pdRedirectUrl')
       
       // Redirect to the stored URL
-      router.push(storedRedirectUrl)
+      router.push(finalRedirectUrl)
     }
   }, [isLoaded, isSignedIn, pathname, router])
 

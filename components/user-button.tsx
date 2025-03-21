@@ -24,8 +24,8 @@ export function UserButton() {
   const csrfToken = useCSRFToken()
   
   // The issue is likely with app paths - ensure they're properly handled
-  // Fix the possible path issue for /app/[slug] paths
-  const fixedPathname = pathname
+  // Fix the possible path issue for /app/[slug] paths and add basePath prefix
+  const fixedPathname = '/mcp' + pathname
   const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(fixedPathname)}`
   
   // Debug the redirection URL
@@ -60,7 +60,7 @@ export function UserButton() {
                 e.preventDefault();
                 // We're just executing signOut without await or any promise handling
                 // This is the cleanest approach, letting Clerk handle everything
-                signOut({ redirectUrl: pathname });
+                signOut({ redirectUrl: '/mcp' + pathname });
               }}
             >
               Sign out

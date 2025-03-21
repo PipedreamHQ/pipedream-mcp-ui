@@ -4,14 +4,17 @@ import type { NextRequest, NextFetchEvent } from 'next/server'
 import { clerkMiddleware } from '@clerk/nextjs/server'
 import { validateCSRFToken } from './lib/csrf';
 
+// The basePath your Next.js app is using
+const BASE_PATH = '/mcp';
+
 /**
  * Determines if a request is likely related to Clerk authentication
  */
 function isClerkRequest(request: NextRequest): boolean {
   // Check URL patterns that are likely Clerk-related
   if (request.nextUrl.pathname.includes('/__clerk') ||
-      request.nextUrl.pathname.includes('/sign-in') ||
-      request.nextUrl.pathname.includes('/sign-up') ||
+      request.nextUrl.pathname.includes(`${BASE_PATH}/sign-in`) ||
+      request.nextUrl.pathname.includes(`${BASE_PATH}/sign-up`) ||
       request.nextUrl.host?.includes('clerk.')) {
     return true;
   }
@@ -36,27 +39,16 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     console.log(`Detected Clerk auth request: ${request.method} ${request.nextUrl.pathname}`);
   }
   
-  // Block access to /test page when not in debug mode
-  if (!debugMode && request.nextUrl.pathname.startsWith('/test')) {
-    const redirectResponse = NextResponse.redirect(new URL('/', request.url));
-    addSecurityHeaders(redirectResponse);
-    return redirectResponse;
-  }
+  // Test page check removed
   
-  // Block access to API endpoints with debugging features when not in debug mode
-  if (!debugMode && request.nextUrl.pathname.startsWith('/api/check-env') && 
-      request.nextUrl.searchParams.has('includePipedreamTest')) {
-    const redirectResponse = NextResponse.redirect(new URL('/api/check-env', request.url));
-    addSecurityHeaders(redirectResponse);
-    return redirectResponse;
-  }
+  // Debug mode checks removed
   
   // CSRF Protection only for API endpoints and non-Clerk requests
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method) && 
       !isAuthRequest &&  // Skip CSRF validation for Clerk auth requests
-      request.nextUrl.pathname.startsWith('/api/') && 
-      !request.nextUrl.pathname.startsWith('/api/webhooks/') && 
-      !request.nextUrl.pathname.startsWith('/api/csrf')) {
+      request.nextUrl.pathname.startsWith(`${BASE_PATH}/api/`) && 
+      !request.nextUrl.pathname.startsWith(`${BASE_PATH}/api/webhooks/`) && 
+      !request.nextUrl.pathname.startsWith(`${BASE_PATH}/api/csrf`)) {
     
     try {
       if (debugMode) {
@@ -82,7 +74,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
         return NextResponse.json(
           { 
             error: 'Invalid CSRF token', 
-            message: 'Please include a valid CSRF token in the X-CSRF-Token header or request body. Get a token from /api/csrf.'
+            message: `Please include a valid CSRF token in the X-CSRF-Token header or request body. Get a token from ${BASE_PATH}/api/csrf.`
           },
           { status: 403 }
         );
@@ -183,7 +175,8 @@ function generateCSPString(): string {
       "https://clerk.pipedream.com", 
       "https://*.clerk.pipedream.com", 
       "wss://*.clerk.accounts.dev",
-      "https://challenges.cloudflare.com"
+      "https://challenges.cloudflare.com",
+      "https://clerk-telemetry.com"
     ],
     
     // Font sources
@@ -243,7 +236,12 @@ export const config = {
   matcher: [
     // Match all paths except static files and _next
     "/((?!_next/image|_next/static|favicon.ico).*)",
+    "/(api|trpc)(.*)",
     "/",
-    "/api/:path*"
+    // Include basePath-specific routes
+    `${BASE_PATH}/:path*`,
+    `${BASE_PATH}/api/:path*`, 
+    `${BASE_PATH}/sign-in/:path*`,
+    `${BASE_PATH}/sign-up/:path*`
   ],
-}
+};

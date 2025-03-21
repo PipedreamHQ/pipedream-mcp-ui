@@ -31,7 +31,7 @@ export default function UserMetadataInitializer() {
       
       try {
         // Make an API call to retrieve or create the external user ID
-        const response = await fetchWithCSRF('/api/user-metadata')
+        const response = await fetchWithCSRF('/mcp/api/user-metadata')
         
         if (response.ok) {
           const data = await response.json()

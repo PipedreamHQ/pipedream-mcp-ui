@@ -15,9 +15,9 @@ export function MainNav() {
   const [isDebugMode, setIsDebugMode] = useState(false)
   
   // Determine if we're on a specific page or section
-  const isHomePage = pathname === '/'
-  const isAccountsPage = pathname === '/accounts'
-  const isAppDetailPage = pathname.startsWith('/app/')
+  const isHomePage = pathname === '/' || pathname === '/mcp' || pathname === '/mcp/'
+  const isAccountsPage = pathname === '/accounts' || pathname === '/mcp/accounts'
+  const isAppDetailPage = pathname.startsWith('/app/') || pathname.startsWith('/mcp/app/')
 
   useEffect(() => {
     if (isLoaded) {

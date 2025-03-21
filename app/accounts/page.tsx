@@ -46,7 +46,7 @@ export default function AccountsPage() {
         })
       }
       
-      const response = await fetch("/api/accounts")
+      const response = await fetch("/mcp/api/accounts")
       if (!response.ok) {
         const errorText = await response.text()
         if (debugMode) {
@@ -101,7 +101,7 @@ export default function AccountsPage() {
       // Import the enhanced fetch with CSRF protection
       const { fetchWithCSRF } = await import('@/lib/fetch-with-csrf')
       
-      const response = await fetchWithCSRF(`/api/accounts?id=${accountId}`, {
+      const response = await fetchWithCSRF(`/mcp/api/accounts?id=${accountId}`, {
         method: "DELETE",
       })
       
@@ -174,7 +174,7 @@ export default function AccountsPage() {
       }
       
       // Use existing fetch without CSRF since this is a GET request
-      const accountsResponse = await fetch("/api/accounts")
+      const accountsResponse = await fetch("/mcp/api/accounts")
       const accountsData = await accountsResponse.json()
       
       if (debugMode) {
@@ -211,7 +211,7 @@ export default function AccountsPage() {
           <p className="text-muted-foreground mb-4">
             You need to sign in to view and manage your connected accounts.
           </p>
-          <Button onClick={() => router.push("/sign-in?redirect_url=/accounts")}>
+          <Button onClick={() => router.push("/sign-in?redirect_url=/mcp/accounts")}>
             Sign In
           </Button>
         </div>

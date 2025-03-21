@@ -105,7 +105,7 @@ export function useFetchWithSessionId() {
   
   return (url: string, options: RequestInit = {}) => {
     // Only add the header for our API calls
-    if (typeof url === 'string' && url.startsWith('/api/') && sessionId) {
+    if (typeof url === 'string' && (url.startsWith('/api/') || url.startsWith('/mcp/api/')) && sessionId) {
       const headers = new Headers(options.headers);
       headers.set('x-session-id', sessionId);
       options = { ...options, headers };
@@ -123,7 +123,7 @@ export function useEnhancedFetch() {
   const sessionId = useSessionId();
   
   return (url: string, options: RequestInit = {}) => {
-    const isApiCall = typeof url === 'string' && url.startsWith('/api/');
+    const isApiCall = typeof url === 'string' && (url.startsWith('/api/') || url.startsWith('/mcp/api/'));
     let enhancedOptions = { ...options };
     
     // Add CSRF token for state-changing methods

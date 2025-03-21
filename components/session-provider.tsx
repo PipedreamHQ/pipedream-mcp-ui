@@ -37,7 +37,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       
       // If no stored ID, get a new UUID from the server
       try {
-        const response = await fetchWithCSRF('/api/external-user-id');
+        const response = await fetchWithCSRF('/mcp/api/external-user-id');
         
         if (response.ok) {
           const data = await response.json();

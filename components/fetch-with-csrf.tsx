@@ -69,7 +69,7 @@ async function fetchCSRFToken(): Promise<void> {
       options.headers = { 'x-nonce': nonce };
     }
     
-    await fetch('/api/csrf', options);
+    await fetch('/mcp/api/csrf', options);
     // The token will be set as a cookie by the server
   } catch (error) {
     console.error('Failed to fetch CSRF token:', error);
