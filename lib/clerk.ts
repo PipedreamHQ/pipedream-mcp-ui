@@ -4,10 +4,6 @@ import { randomUUID } from "crypto"
 // Helper function to get the origin for Clerk requests
 export function getBaseUrl() {
   // Always use the environment variable if available
-  // In production, always use pipedream.com
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://pipedream.com'
-  }
   return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 }
 

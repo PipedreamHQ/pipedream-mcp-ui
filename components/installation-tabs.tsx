@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/tooltip"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { getBaseUrl } from "@/lib/clerk"
 import { useSessionId } from "@/lib/fetch-with-csrf"
 import type { App } from "@/lib/supabase"
 
@@ -79,7 +78,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
             <div>
               <p className="text-xs sm:text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
               <Button size="sm" asChild className="transition-all duration-200">
-                <Link href={`/sign-in?redirect_url=${encodeURIComponent(getBaseUrl() + '/mcp' + pathname)}`}>Sign In</Link>
+                <Link href={`/sign-in?redirect_url=${encodeURIComponent('/mcp' + pathname)}`}>Sign In</Link>
               </Button>
             </div>
           </div>

@@ -30,8 +30,7 @@ export default function RedirectHandler() {
         
         // Use the correct basePath-prefixed API URL
         // Get the base URL for proper request routing
-        // Use the getBaseUrl function to ensure consistent domain usage
-        const baseUrl = getBaseUrl()
+        const baseUrl = window.location.origin
         
         // Call the external-user-id API first, which will properly check Clerk metadata
         // and ensure the Clerk value is used if it exists
