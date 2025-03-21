@@ -69,33 +69,36 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
       )
     }
 
+    // If not signed in, show sign-in message regardless of externalUserId state
+    if (!userId) {
+      return (
+        <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
+          <div className="flex flex-col items-center text-center gap-3">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-xs sm:text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
+              <Button size="sm" asChild className="transition-all duration-200">
+                <Link href={`/sign-in?redirect_url=${encodeURIComponent(pathname)}`}>Sign In</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    // User is authenticated but no externalUserId yet
     if (!externalUserId) {
-      if (!userId) {
-        return (
-          <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
-            <div className="flex flex-col items-center text-center gap-3">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-xs sm:text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
-                <Button size="sm" asChild className="transition-all duration-200">
-                  <Link href={`/sign-in?redirect_url=${encodeURIComponent(pathname)}`}>Sign In</Link>
-                </Button>
-              </div>
-            </div>
+      return (
+        <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+            <span className="ml-2 text-xs sm:text-sm">Generating secure ID...</span>
           </div>
-        )
-      } else {
-        return (
-          <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              <span className="ml-2 text-xs sm:text-sm">Generating secure ID...</span>
-            </div>
-          </div>
-        )
-      }
+        </div>
+      )
     }
 
+    // User is authenticated and has an externalUserId
     return (
       <div className="bg-muted rounded-md p-3 mt-4 transition-all duration-200">
         <p className="text-xs sm:text-sm text-muted-foreground mb-1">MCP server URL</p>

@@ -80,8 +80,6 @@ export function MainNav() {
           </Link>
         </div>
       </nav>
-      <UserButton />
-      <ThemeToggle />
     </div>
   )
 }

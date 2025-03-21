@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { UserIcon } from "lucide-react"
+import { useCSRFToken } from "@/components/csrf-provider"
+import { CSRF_HEADER } from "@/lib/csrf"
 
 export function UserButton() {
   const { isLoaded, userId } = useAuth()
@@ -19,6 +21,7 @@ export function UserButton() {
   const { user } = useUser()
   const router = useRouter()
   const pathname = usePathname()
+  const csrfToken = useCSRFToken()
   
   // The issue is likely with app paths - ensure they're properly handled
   // Fix the possible path issue for /app/[slug] paths
@@ -50,13 +53,18 @@ export function UserButton() {
             {primaryEmail}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            onClick={async () => {
-              await signOut()
-              router.push(pathname)
-            }}
-          >
-            Sign out
+          <DropdownMenuItem asChild>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                // We're just executing signOut without await or any promise handling
+                // This is the cleanest approach, letting Clerk handle everything
+                signOut({ redirectUrl: pathname });
+              }}
+            >
+              Sign out
+            </a>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

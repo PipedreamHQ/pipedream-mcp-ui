@@ -11,14 +11,23 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function getExternalUserId() {
-      // Only proceed if user is authenticated
+      // Check if auth is loaded
+      if (!isLoaded) return;
+      
+      // Clear session ID if user is not authenticated
       if (!userId) {
-        console.log("User not authenticated, not generating UUID");
+        console.log("User not authenticated, clearing session ID");
+        setSessionId(null);
+        
+        // Also clear from sessionStorage to ensure consistency
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('pdExternalUserId');
+        }
         return;
       }
 
       // First check if we already have a UUID in sessionStorage for this page session
-      const storedId = sessionStorage.getItem('pdExternalUserId');
+      const storedId = typeof window !== 'undefined' ? sessionStorage.getItem('pdExternalUserId') : null;
       
       if (storedId) {
         console.log("Using stored UUID from session:", storedId);
@@ -46,10 +55,8 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    // Only get the external user ID when auth is loaded
-    if (isLoaded) {
-      getExternalUserId();
-    }
+    // Run the function whenever auth state changes
+    getExternalUserId();
   }, [isLoaded, userId, fetchWithCSRF]);
 
   return (

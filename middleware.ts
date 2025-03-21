@@ -4,10 +4,37 @@ import type { NextRequest, NextFetchEvent } from 'next/server'
 import { clerkMiddleware } from '@clerk/nextjs/server'
 import { validateCSRFToken } from './lib/csrf';
 
+/**
+ * Determines if a request is likely related to Clerk authentication
+ */
+function isClerkRequest(request: NextRequest): boolean {
+  // Check URL patterns that are likely Clerk-related
+  if (request.nextUrl.pathname.includes('/__clerk') ||
+      request.nextUrl.pathname.includes('/sign-in') ||
+      request.nextUrl.pathname.includes('/sign-up') ||
+      request.nextUrl.host?.includes('clerk.')) {
+    return true;
+  }
+  
+  // Check for Clerk-specific headers
+  if (request.headers.has('clerk-frontend-api')) {
+    return true;
+  }
+  
+  return false;
+}
+
 // Create a custom middleware that applies security headers
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Check if we're in debug mode
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
+  
+  // Check if it's a Clerk-related request
+  const isAuthRequest = isClerkRequest(request);
+  
+  if (isAuthRequest && debugMode) {
+    console.log(`Detected Clerk auth request: ${request.method} ${request.nextUrl.pathname}`);
+  }
   
   // Block access to /test page when not in debug mode
   if (!debugMode && request.nextUrl.pathname.startsWith('/test')) {
@@ -24,61 +51,76 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     return redirectResponse;
   }
   
-  // CSRF Protection for state-changing methods
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
-    // Skip CSRF validation for:
-    // 1. Webhook endpoints
-    // 2. CSRF setup endpoint itself
-    if (!request.nextUrl.pathname.startsWith('/api/webhooks/') && 
-        !request.nextUrl.pathname.startsWith('/api/csrf')) {
-      try {
-        const csrfValid = await validateCSRFToken(request);
-        if (!csrfValid) {
-          return NextResponse.json(
-            { 
-              error: 'Invalid CSRF token', 
-              message: 'Please include a valid CSRF token in the X-CSRF-Token header or request body. Get a token from /api/csrf.'
-            },
-            { status: 403 }
-          );
+  // CSRF Protection only for API endpoints and non-Clerk requests
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method) && 
+      !isAuthRequest &&  // Skip CSRF validation for Clerk auth requests
+      request.nextUrl.pathname.startsWith('/api/') && 
+      !request.nextUrl.pathname.startsWith('/api/webhooks/') && 
+      !request.nextUrl.pathname.startsWith('/api/csrf')) {
+    
+    try {
+      if (debugMode) {
+        console.log(`Validating CSRF for: ${request.method} ${request.nextUrl.pathname}`);
+      }
+      
+      const csrfValid = await validateCSRFToken(request);
+      if (!csrfValid) {
+        if (debugMode) {
+          console.error(`CSRF validation failed for ${request.method} ${request.nextUrl.pathname}`);
+          
+          // Extra debug info
+          const cookieHeader = request.headers.get('cookie');
+          console.error(`Cookie header exists: ${!!cookieHeader}`);
+          if (cookieHeader) {
+            console.error(`Cookie header length: ${cookieHeader.length}`);
+          }
+          
+          const headerToken = request.headers.get('X-CSRF-Token');
+          console.error(`CSRF header exists: ${!!headerToken}`);
         }
-      } catch (error) {
-        console.error('CSRF validation error:', error);
+        
         return NextResponse.json(
-          { error: 'CSRF validation failed' },
+          { 
+            error: 'Invalid CSRF token', 
+            message: 'Please include a valid CSRF token in the X-CSRF-Token header or request body. Get a token from /api/csrf.'
+          },
           { status: 403 }
         );
       }
+    } catch (error) {
+      console.error('CSRF validation error:', error);
+      return NextResponse.json(
+        { error: 'CSRF validation failed' },
+        { status: 403 }
+      );
     }
   }
   
-  // Apply Clerk middleware
-  const clerkResponse = clerkMiddleware(request, event);
+  // Apply Clerk middleware for everything
+  const clerkResponse = await clerkMiddleware(request, event);
   
   // Add security headers to the response
-  return Promise.resolve(clerkResponse).then(response => {
-    if (response instanceof Response) {
-      // Clone the response to modify headers
-      const headers = new Headers(response.headers);
-      
-      // Add security headers
-      headers.set('Content-Security-Policy', generateCSPString());
-      headers.set('X-Content-Type-Options', 'nosniff');
-      headers.set('X-Frame-Options', 'SAMEORIGIN');
-      headers.set('X-XSS-Protection', '1; mode=block');
-      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-      headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-      headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-      
-      // Create a new response with our headers
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-      });
-    }
-    return response;
-  });
+  if (clerkResponse instanceof Response) {
+    const headers = new Headers(clerkResponse.headers);
+    
+    // Add security headers
+    headers.set('Content-Security-Policy', generateCSPString());
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'SAMEORIGIN');
+    headers.set('X-XSS-Protection', '1; mode=block');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    
+    // Create a new response with our headers
+    return new Response(clerkResponse.body, {
+      status: clerkResponse.status,
+      statusText: clerkResponse.statusText,
+      headers
+    });
+  }
+  
+  return clerkResponse;
 }
 
 // Helper function to add security headers
@@ -102,7 +144,7 @@ function generateCSPString(): string {
     // Default fallback - most restrictive
     'default-src': ["'self'"],
     
-    // Script sources - self, Clerk, and dynamic script loading
+    // Script sources - self, Clerk, Cloudflare Turnstile, and dynamic script loading
     'script-src': [
       "'self'", 
       "'unsafe-inline'",  // Allow inline scripts
@@ -111,7 +153,8 @@ function generateCSPString(): string {
       "*.clerk.app", 
       "https://clerk.dev", 
       "https://clerk.pipedream.com", 
-      "https://*.clerk.pipedream.com"
+      "https://*.clerk.pipedream.com",
+      "https://challenges.cloudflare.com"
     ],
     
     // Style sources - allow inline styles needed by frameworks
@@ -139,7 +182,8 @@ function generateCSPString(): string {
       "https://*.clerk.app", 
       "https://clerk.pipedream.com", 
       "https://*.clerk.pipedream.com", 
-      "wss://*.clerk.accounts.dev"
+      "wss://*.clerk.accounts.dev",
+      "https://challenges.cloudflare.com"
     ],
     
     // Font sources
@@ -154,7 +198,8 @@ function generateCSPString(): string {
       "https://*.clerk.accounts.dev", 
       "https://*.clerk.app", 
       "https://clerk.pipedream.com", 
-      "https://*.clerk.pipedream.com"
+      "https://*.clerk.pipedream.com",
+      "https://challenges.cloudflare.com"
     ],
     
     // Manifest sources
@@ -193,10 +238,10 @@ function generateCSPString(): string {
     .join('; ');
 }
  
-// Configuration for Next.js middleware
+// Configuration for Next.js middleware - optimized for both our needs and Clerk
 export const config = {
-  // Run middleware on all paths
   matcher: [
+    // Match all paths except static files and _next
     "/((?!_next/image|_next/static|favicon.ico).*)",
     "/",
     "/api/:path*"

@@ -59,6 +59,10 @@ export const setup = (res: Response): Response => {
   // Set a secure HttpOnly cookie with the token (not accessible to JavaScript)
   headers.append('Set-Cookie', `${CSRF_COOKIE}=${token}; Path=/; SameSite=Strict; HttpOnly${expires}; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
   
+  // Also set a JS-accessible cookie for our client code
+  // This keeps the double-submit cookie pattern working while allowing our client code to access the value
+  headers.append('Set-Cookie', `XSRF-TOKEN=${token}; Path=/; SameSite=Strict${expires}; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
+  
   // Also add the token to response headers for the initial page load
   headers.append(CSRF_HEADER, token);
   

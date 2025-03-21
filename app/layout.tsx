@@ -64,13 +64,17 @@ export default async function RootLayout({
       <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
         <body className="font-sans transition-all duration-200">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <ClerkLoaded>
-              <UserMetadataInitializer />
-            </ClerkLoaded>
-            <RedirectHandler />
-            <div className="transition-opacity duration-300">
-              {children}
-            </div>
+            <CSRFProvider token={token}>
+              <SessionProvider>
+                <ClerkLoaded>
+                  <UserMetadataInitializer />
+                </ClerkLoaded>
+                <RedirectHandler />
+                <div className="transition-opacity duration-300">
+                  {children}
+                </div>
+              </SessionProvider>
+            </CSRFProvider>
           </ThemeProvider>
         </body>
       </html>

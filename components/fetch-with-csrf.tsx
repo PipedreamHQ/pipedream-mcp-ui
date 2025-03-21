@@ -43,7 +43,12 @@ function getCSRFTokenFromCookie(): string | null {
   const cookies = document.cookie.split(';');
   for (const cookie of cookies) {
     const [name, value] = cookie.trim().split('=');
+    // Check for JS-accessible XSRF-TOKEN first (our preferred method)
     if (name === 'XSRF-TOKEN') {
+      return decodeURIComponent(value);
+    }
+    // Fallback to CSRF-TOKEN if present (though this should be HttpOnly)
+    if (name === 'CSRF-TOKEN') {
       return decodeURIComponent(value);
     }
   }

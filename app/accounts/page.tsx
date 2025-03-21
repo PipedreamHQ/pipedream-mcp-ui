@@ -98,7 +98,10 @@ export default function AccountsPage() {
   const deleteAccount = async (accountId: string) => {
     setDeletingId(accountId)
     try {
-      const response = await fetch(`/api/accounts?id=${accountId}`, {
+      // Import the enhanced fetch with CSRF protection
+      const { fetchWithCSRF } = await import('@/lib/fetch-with-csrf')
+      
+      const response = await fetchWithCSRF(`/api/accounts?id=${accountId}`, {
         method: "DELETE",
       })
       
@@ -170,6 +173,7 @@ export default function AccountsPage() {
         console.log("Testing accounts endpoint directly...")
       }
       
+      // Use existing fetch without CSRF since this is a GET request
       const accountsResponse = await fetch("/api/accounts")
       const accountsData = await accountsResponse.json()
       
