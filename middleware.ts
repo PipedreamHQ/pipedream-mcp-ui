@@ -1,6 +1,6 @@
 // middleware.ts
 import { NextResponse } from 'next/server'
-import type { NextRequest, NextFetchEvent } from 'next/server'
+import { NextRequest, NextFetchEvent } from 'next/server'
 import { clerkMiddleware } from '@clerk/nextjs/server'
 import { validateCSRFToken } from './lib/csrf';
 
@@ -88,8 +88,24 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     }
   }
   
-  // Apply Clerk middleware for everything
-  const clerkResponse = await clerkMiddleware(request, event);
+  let clerkRequest = request;
+  if (isAuthRequest) {
+    // https://clerk.com/docs/deployments/deploy-behind-a-proxy
+    // These get passed from the pipedreamcom-proxy to Vercel,
+    // then from Vercel to Clerk here
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-forwarded-host', request.headers.get('x-forwarded-host') || '');
+    requestHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || '');
+    
+    // Create a new request with the updated headers
+    clerkRequest = new NextRequest(request.url, {
+      ...request,
+      headers: requestHeaders,
+    });
+  }
+
+  // Apply Clerk middleware with the updated request
+  const clerkResponse = await clerkMiddleware(clerkRequest, event);
   
   // Add security headers to the response
   if (clerkResponse instanceof Response) {
