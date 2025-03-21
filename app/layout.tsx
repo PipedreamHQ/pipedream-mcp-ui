@@ -3,15 +3,12 @@ import type { Metadata } from "next"
 import { GeistSans } from 'geist/font/sans'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-// Use ClerkProvider directly as shown in the official example
 import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
 import RedirectHandler from "@/components/redirect-handler"
 import CSRFProvider from "@/components/csrf-provider"
 import SessionProvider from "@/components/session-provider"
 import { csrfToken } from "@/lib/csrf"
-
-// Use GeistSans as our primary font
 
 export const metadata: Metadata = {
   title: "Pipedream MCP",
