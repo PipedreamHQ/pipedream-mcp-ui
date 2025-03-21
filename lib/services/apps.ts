@@ -21,6 +21,7 @@ export async function getApps({
   pageSize?: number;
   useBackup?: boolean;
 }) {
+  // XXX we need to automate the Supabase ETL
   // Try Supabase first unless backup is explicitly requested
   if (!useBackup) {
     try {
