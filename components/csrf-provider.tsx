@@ -40,8 +40,14 @@ export function useCSRFToken() {
   return useContext(CSRFContext);
 }
 
-export default function CSRFProvider({ children }: { children: React.ReactNode }) {
-  const [csrfToken, setCSRFToken] = useState<string>('');
+export default function CSRFProvider({ 
+  children, 
+  token 
+}: { 
+  children: React.ReactNode;
+  token?: string;
+}) {
+  const [csrfToken, setCSRFToken] = useState<string>(token || '');
 
   useEffect(() => {
     // Function to fetch new token
@@ -78,14 +84,17 @@ export default function CSRFProvider({ children }: { children: React.ReactNode }
       }
     };
     
-    // Get the CSRF token from the meta tag first
-    const metaToken = getCSRFTokenFromMeta();
-    
-    if (metaToken) {
-      setCSRFToken(metaToken);
-    } else {
-      // If not available in meta tag, fetch a new token
-      fetchNewToken();
+    // If we have a token prop, use it; otherwise get from meta or fetch
+    if (!token) {
+      // Get the CSRF token from the meta tag first
+      const metaToken = getCSRFTokenFromMeta();
+      
+      if (metaToken) {
+        setCSRFToken(metaToken);
+      } else {
+        // If not available in meta tag, fetch a new token
+        fetchNewToken();
+      }
     }
     
     // Set up token refresh interval (every 30 minutes)
@@ -96,7 +105,7 @@ export default function CSRFProvider({ children }: { children: React.ReactNode }
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [token]);
 
   return (
     <CSRFContext.Provider value={csrfToken}>
