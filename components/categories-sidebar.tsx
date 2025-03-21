@@ -27,7 +27,7 @@ export default function MCPServerCategoriesSidebar() {
     const fetchCategories = async () => {
       setLoading(true)
       try {
-        const response = await fetch("/api/categories")
+        const response = await fetch("/mcp/api/categories")
         const data = await response.json()
 
         if (data.categories) {

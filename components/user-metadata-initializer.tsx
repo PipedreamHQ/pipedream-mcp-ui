@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useAuth, useUser } from '@clerk/nextjs'
+import { useFetchWithCSRF } from '@/lib/fetch-with-csrf'
 
 /**
  * This component initializes the external user ID in Clerk metadata
@@ -11,6 +12,7 @@ import { useAuth, useUser } from '@clerk/nextjs'
 export default function UserMetadataInitializer() {
   const { isLoaded, isSignedIn } = useAuth()
   const { user } = useUser()
+  const fetchWithCSRF = useFetchWithCSRF()
 
   useEffect(() => {
     // Only proceed if auth is loaded and user is signed in
@@ -29,7 +31,7 @@ export default function UserMetadataInitializer() {
       
       try {
         // Make an API call to retrieve or create the external user ID
-        const response = await fetch('/api/user-metadata')
+        const response = await fetchWithCSRF('/mcp/api/user-metadata')
         
         if (response.ok) {
           const data = await response.json()
@@ -60,7 +62,7 @@ export default function UserMetadataInitializer() {
     return () => {
       // Any cleanup if needed
     }
-  }, [isLoaded, isSignedIn, user])
+  }, [isLoaded, isSignedIn, user, fetchWithCSRF])
 
   // This component doesn't render anything visible
   return null

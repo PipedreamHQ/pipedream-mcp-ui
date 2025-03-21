@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -33,17 +33,11 @@ export default function AccountsPage() {
   const router = useRouter()
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     setLoading(true)
     try {
-      // First check if our environment variables are correctly configured
-      const envCheck = await fetch("/api/check-env")
-      const envData = await envCheck.json()
-      
       // Only log in debug mode
       if (debugMode) {
-        console.log("Environment check:", envData)
-        
         // Log current user information from Clerk's client-side hooks
         console.log("Current user from Clerk client:", { 
           userId, 
@@ -52,7 +46,7 @@ export default function AccountsPage() {
         })
       }
       
-      const response = await fetch("/api/accounts")
+      const response = await fetch("/mcp/api/accounts")
       if (!response.ok) {
         const errorText = await response.text()
         if (debugMode) {
@@ -99,12 +93,15 @@ export default function AccountsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, debugMode, isLoaded, setLoading, setAccounts])
 
   const deleteAccount = async (accountId: string) => {
     setDeletingId(accountId)
     try {
-      const response = await fetch(`/api/accounts?id=${accountId}`, {
+      // Import the enhanced fetch with CSRF protection
+      const { fetchWithCSRF } = await import('@/lib/fetch-with-csrf')
+      
+      const response = await fetchWithCSRF(`/mcp/api/accounts?id=${accountId}`, {
         method: "DELETE",
       })
       
@@ -138,7 +135,7 @@ export default function AccountsPage() {
       // Only fetch accounts if user is authenticated
       fetchAccounts()
     }
-  }, [isLoaded, userId])
+  }, [isLoaded, userId, fetchAccounts])
   
   // Show loading state while clerk auth is loading
   if (!isLoaded) {
@@ -171,24 +168,13 @@ export default function AccountsPage() {
   // Helper function to test Pipedream API directly - only shown in debug mode
   const testPipedreamApi = async () => {
     try {
-      // First test connection through the check-env endpoint
-      const response = await fetch(`/api/check-env?includePipedreamTest=true`)
-      const data = await response.json()
-      
       if (debugMode) {
-        console.log("Pipedream API test result:", data)
-        
-        // Log current user info from client side
-        console.log("Current user info from client:", {
-          clerkUserId: userId,
-          externalUserId: data.pipedream?.externalUserId ? "Set in ENV" : "Using Clerk ID"
-        })
-        
-        // Then try the accounts endpoint explicitly
+        // Then try the accounts endpoint directly
         console.log("Testing accounts endpoint directly...")
       }
       
-      const accountsResponse = await fetch("/api/accounts")
+      // Use existing fetch without CSRF since this is a GET request
+      const accountsResponse = await fetch("/mcp/api/accounts")
       const accountsData = await accountsResponse.json()
       
       if (debugMode) {
@@ -201,8 +187,8 @@ export default function AccountsPage() {
       
       toast({
         title: "Pipedream API test",
-        description: `Test ${data.pipedreamTest?.success ? 'succeeded' : 'failed'}. Found ${accountsCount} accounts. Check console for details.`,
-        variant: data.pipedreamTest?.success ? "default" : "destructive",
+        description: `Test completed. Found ${accountsCount} accounts. Check console for details.`,
+        variant: "default"
       })
     } catch (error) {
       if (debugMode) {
@@ -225,7 +211,7 @@ export default function AccountsPage() {
           <p className="text-muted-foreground mb-4">
             You need to sign in to view and manage your connected accounts.
           </p>
-          <Button onClick={() => router.push("/sign-in?redirect_url=/accounts")}>
+          <Button onClick={() => router.push("/sign-in?redirect_url=/mcp/accounts")}>
             Sign In
           </Button>
         </div>
@@ -278,7 +264,7 @@ export default function AccountsPage() {
                   <div className="text-center py-10">
                     <h3 className="text-lg font-medium mb-2">No connected accounts</h3>
                     <p className="text-muted-foreground mb-4">
-                      You haven't connected any accounts yet.
+                      You haven&apos;t connected any accounts yet.
                     </p>
                     <Button onClick={() => router.push("/")}>
                       Browse MCP servers

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { UserButton } from "@/components/user-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@clerk/nextjs"
@@ -16,10 +15,9 @@ export function MainNav() {
   const [isDebugMode, setIsDebugMode] = useState(false)
   
   // Determine if we're on a specific page or section
-  const isHomePage = pathname === '/'
-  const isAccountsPage = pathname === '/accounts'
-  const isAppDetailPage = pathname.startsWith('/app/')
-  const isClerkTestPage = pathname === '/test/clerk-metadata-test'
+  const isHomePage = pathname === '/' || pathname === '/mcp' || pathname === '/mcp/'
+  const isAccountsPage = pathname === '/accounts' || pathname === '/mcp/accounts'
+  const isAppDetailPage = pathname.startsWith('/app/') || pathname.startsWith('/mcp/app/')
 
   useEffect(() => {
     if (isLoaded) {
@@ -80,21 +78,6 @@ export function MainNav() {
           >
             Connected Accounts
           </Link>
-          
-          {/* Only show Clerk Test link in debug mode */}
-          {isDebugMode && (
-            <Link 
-              href="/test/clerk-metadata-test" 
-              className={cn(
-                "px-3 py-1.5 md:px-4 md:py-2 rounded-md font-medium transition-all duration-300 text-xs md:text-sm w-full md:w-auto text-center",
-                isClerkTestPage
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "hover:bg-muted/80 text-foreground"
-              )}
-            >
-              Clerk Test
-            </Link>
-          )}
         </div>
       </nav>
     </div>

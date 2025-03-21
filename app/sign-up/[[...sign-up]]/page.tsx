@@ -5,10 +5,11 @@ import { useSearchParams } from "next/navigation"
 
 export default function Page() {
   const searchParams = useSearchParams()
+  // Get the redirect URL from search params, default to home path
   let originalRedirectUrl = searchParams.get("redirect_url") || "/"
   
   // Always redirect to the initialize-metadata page first, which will then redirect to the original destination
-  let redirectUrl = "/api/initialize-metadata"
+  let redirectUrl = "/mcp/api/initialize-metadata"
   
   // Debug the redirect URL
   if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
@@ -38,6 +39,7 @@ export default function Page() {
           },
         }}
         redirectUrl={redirectUrl}
+        path="/mcp/sign-up"
       />
     </div>
   )

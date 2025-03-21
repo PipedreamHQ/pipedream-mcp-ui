@@ -4,10 +4,11 @@ import { GeistSans } from 'geist/font/sans'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
-import RedirectHandler from "@/components/redirect-handler"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
-
-// Use GeistSans as our primary font
+import RedirectHandler from "@/components/redirect-handler"
+import CSRFProvider from "@/components/csrf-provider"
+import SessionProvider from "@/components/session-provider"
+import { csrfToken } from "@/lib/csrf"
 
 export const metadata: Metadata = {
   title: "Pipedream MCP",
@@ -38,11 +39,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Generate CSRF token for the meta tag
+  const token = await csrfToken();
+  
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
@@ -57,13 +61,17 @@ export default function RootLayout({
       <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
         <body className="font-sans transition-all duration-200">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <ClerkLoaded>
-              <UserMetadataInitializer />
-            </ClerkLoaded>
-            <RedirectHandler />
-            <div className="transition-opacity duration-300">
-              {children}
-            </div>
+            <CSRFProvider token={token}>
+              <SessionProvider>
+                <ClerkLoaded>
+                  <UserMetadataInitializer />
+                </ClerkLoaded>
+                <RedirectHandler />
+                <div className="transition-opacity duration-300">
+                  {children}
+                </div>
+              </SessionProvider>
+            </CSRFProvider>
           </ThemeProvider>
         </body>
       </html>

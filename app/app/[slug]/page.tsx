@@ -9,8 +9,9 @@ import Link from "next/link"
 import { MainNav } from "@/components/main-nav"
 import { Metadata } from "next"
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const app = await getAppBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const app = await getAppBySlug(slug)
   
   if (!app) {
     return {
@@ -169,9 +170,8 @@ async function getAppActions(slug: string) {
   }
 }
 
-export default async function AppDetailPage({ params }: { params: { slug: string } }) {
-  // Fix for Next.js warning about accessing params synchronously
-  const slug = params?.slug;
+export default async function AppDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   
   const app = await getAppBySlug(slug)
 

@@ -21,6 +21,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useSessionId } from "@/lib/fetch-with-csrf"
 import type { App } from "@/lib/supabase"
 
 interface InstallationTabsProps {
@@ -30,169 +32,11 @@ interface InstallationTabsProps {
 export default function InstallationTabs({ app }: InstallationTabsProps) {
   const [copied, setCopied] = useState(false)
   const [showUrl, setShowUrl] = useState(false)
-  const [externalUserId, setExternalUserId] = useState<string | null>(null)
+  const pathname = usePathname()
+  const externalUserId = useSessionId()
   const [currentTab, setCurrentTab] = useState("cursor")
   const { isLoaded, userId } = useAuth()
   const { user } = useUser()
-
-  // Get or generate a client-side UUID for this session
-  useEffect(() => {
-    function generateClientUUID() {
-      // Simple UUID generation for client-side
-      // This isn't cryptographically secure, but is a reasonable temporary fallback
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0, 
-              v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
-    
-    async function getExternalUserId() {
-      if (user) {
-        try {
-          // First check if we already have a UUID in sessionStorage for this page session
-          // This ensures we use the same ID across the whole browsing session
-          const storedId = sessionStorage.getItem('pdExternalUserId')
-          
-          if (storedId) {
-            console.log("Using stored UUID from session:", storedId)
-            
-            // Set up a listener to add the session ID to API calls for consistency
-            if (typeof window !== 'undefined') {
-              const originalFetch = window.fetch;
-              window.fetch = function(input, init = {}) {
-                // Only add the header for our API calls
-                if (typeof input === 'string' && input.startsWith('/api/')) {
-                  init.headers = init.headers || {};
-                  init.headers = {
-                    ...init.headers,
-                    'x-session-id': storedId
-                  };
-                }
-                return originalFetch(input, init);
-              };
-            }
-            
-            setExternalUserId(storedId)
-            return
-          }
-          
-          // If no stored session ID, try to get the UUID from Clerk metadata
-          // This is the persistent UUID across sessions
-          try {
-            const response = await fetch('/api/user-metadata')
-            
-            if (response.ok) {
-              const data = await response.json()
-              if (data.pd_external_user_id) {
-                console.log("Retrieved external user ID from Clerk metadata:", data.pd_external_user_id)
-                const clerkUuid = data.pd_external_user_id
-                
-                // Set up fetch API interception to add the header consistently
-                if (typeof window !== 'undefined') {
-                  const originalFetch = window.fetch;
-                  window.fetch = function(input, init = {}) {
-                    // Only add the header for our API calls
-                    if (typeof input === 'string' && input.startsWith('/api/')) {
-                      init.headers = init.headers || {};
-                      init.headers = {
-                        ...init.headers,
-                        'x-session-id': clerkUuid
-                      };
-                    }
-                    return originalFetch(input, init);
-                  };
-                }
-                
-                setExternalUserId(clerkUuid)
-                // Store in session storage so it persists during navigation
-                sessionStorage.setItem('pdExternalUserId', clerkUuid)
-                return
-              }
-            }
-          } catch (clerkError) {
-            console.error("Error retrieving user metadata from Clerk:", clerkError)
-            // Continue to fallback mechanisms
-          }
-          
-          // If Clerk metadata retrieval fails, fall back to the external-user-id endpoint
-          try {
-            const response = await fetch('/api/external-user-id')
-            
-            if (response.ok) {
-              const data = await response.json()
-              if (data.externalUserId) {
-                console.log("Using server-generated UUID:", data.externalUserId)
-                const newUuid = data.externalUserId
-                
-                // Set up a listener to add the session ID to other API calls
-                if (typeof window !== 'undefined') {
-                  const originalFetch = window.fetch;
-                  window.fetch = function(input, init = {}) {
-                    // Only add the header for our API calls
-                    if (typeof input === 'string' && input.startsWith('/api/')) {
-                      init.headers = init.headers || {};
-                      init.headers = {
-                        ...init.headers,
-                        'x-session-id': newUuid
-                      };
-                    }
-                    return originalFetch(input, init);
-                  };
-                }
-                
-                setExternalUserId(newUuid)
-                // Store in session storage so it persists during navigation
-                sessionStorage.setItem('pdExternalUserId', newUuid)
-                return
-              }
-            }
-          } catch (serverError) {
-            console.error("Error getting external user ID from server:", serverError)
-            // Continue to client-side fallback
-          }
-          
-          // As a last resort, generate a client-side UUID
-          const fallbackId = generateClientUUID()
-          console.log("Generated client-side UUID:", fallbackId)
-          
-          // Store the fallback ID in Clerk metadata for persistence
-          try {
-            const metadataResponse = await fetch('/api/user-metadata', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                pd_external_user_id: fallbackId
-              }),
-            })
-            
-            if (metadataResponse.ok) {
-              console.log("Successfully persisted client-generated UUID to Clerk metadata")
-            } else {
-              console.error("Failed to persist client-generated UUID to Clerk metadata:", await metadataResponse.text())
-            }
-          } catch (persistError) {
-            console.error("Error persisting client-generated UUID to Clerk metadata:", persistError)
-          }
-          
-          setExternalUserId(fallbackId)
-          // Store it in session storage for consistency
-          sessionStorage.setItem('pdExternalUserId', fallbackId)
-          console.log("Using client-generated UUID:", fallbackId)
-        } catch (error) {
-          console.error("Error getting external user ID:", error)
-          // Absolute fallback to using the Clerk userId
-          setExternalUserId(userId)
-        }
-      }
-    }
-    
-    if (user) {
-      getExternalUserId()
-    }
-  }, [user, userId])
   
   // Generate a unique MCP server URL using the external user ID
   const mcpServerUrl = externalUserId ? 
@@ -225,33 +69,36 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
       )
     }
 
+    // If not signed in, show sign-in message regardless of externalUserId state
+    if (!userId) {
+      return (
+        <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
+          <div className="flex flex-col items-center text-center gap-3">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-xs sm:text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
+              <Button size="sm" asChild className="transition-all duration-200">
+                <Link href={`/sign-in?redirect_url=${encodeURIComponent('/mcp' + pathname)}`}>Sign In</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    // User is authenticated but no externalUserId yet
     if (!externalUserId) {
-      if (!userId) {
-        return (
-          <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
-            <div className="flex flex-col items-center text-center gap-3">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-xs sm:text-sm mb-2">Sign in to generate and copy your unique MCP Server URL</p>
-                <Button size="sm" asChild className="transition-all duration-200">
-                  <Link href="/sign-in">Sign In</Link>
-                </Button>
-              </div>
-            </div>
+      return (
+        <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+            <span className="ml-2 text-xs sm:text-sm">Generating secure ID...</span>
           </div>
-        )
-      } else {
-        return (
-          <div className="bg-muted rounded-md p-3 sm:p-4 mt-4 transition-all duration-200">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              <span className="ml-2 text-xs sm:text-sm">Generating secure ID...</span>
-            </div>
-          </div>
-        )
-      }
+        </div>
+      )
     }
 
+    // User is authenticated and has an externalUserId
     return (
       <div className="bg-muted rounded-md p-3 mt-4 transition-all duration-200">
         <p className="text-xs sm:text-sm text-muted-foreground mb-1">MCP server URL</p>
@@ -377,7 +224,7 @@ export default function InstallationTabs({ app }: InstallationTabsProps) {
               <li>Click <strong>Edit Config</strong></li>
               <li>Open the <span className="font-semibold">claude_desktop_config.json</span> file</li>
               <li>Add the below MCP server configuration to your existing file</li>
-              <li>Make sure to restart Claude when that's done</li>
+              <li>Make sure to restart Claude when that&apos;s done</li>
             </ol>
 
             <div className="bg-muted p-2 sm:p-3 rounded-md mt-4 transition-all duration-200">

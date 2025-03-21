@@ -60,7 +60,13 @@ export async function GET(request: NextRequest) {
         <body>
           <script>
             // Get the redirect URL from sessionStorage
-            const redirectUrl = sessionStorage.getItem('pdRedirectUrl') || '/';
+            let redirectUrl = sessionStorage.getItem('pdRedirectUrl') || '/';
+            
+            // Add the /mcp prefix if the path doesn't already have it and it's not an absolute URL
+            if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('/mcp/') && !redirectUrl.startsWith('http')) {
+              redirectUrl = '/mcp' + redirectUrl;
+            }
+            
             console.log('Redirecting to:', redirectUrl);
             
             // Clear the stored redirect URL

@@ -1,73 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getAuth } from "@clerk/nextjs/server";
-import { getPipedreamExternalUserId } from "@/lib/clerk";
+
+// UUID v4 validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(request: NextRequest) {
   try {
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
     
+    // Verify the user is authenticated
+    const { userId } = getAuth(request);
+    if (!userId) {
+      if (debugMode) {
+        console.log("User not authenticated, access denied");
+      }
+      return NextResponse.json({ 
+        error: "Authentication required" 
+      }, { status: 401 });
+    }
+    
     // Check if a client-provided sessionId is available in headers
     const sessionIdHeader = request.headers.get('x-session-id');
     
-    // If we have a session ID from the client, use it to ensure consistency
-    if (sessionIdHeader) {
+    // If we have a session ID from the client and it's a valid UUID, use it to ensure consistency
+    if (sessionIdHeader && UUID_REGEX.test(sessionIdHeader)) {
       if (debugMode) {
-        console.log(`Using client-provided session ID from header: ${sessionIdHeader}`);
+        console.log(`Using valid client-provided session ID from header: ${sessionIdHeader}`);
       }
-      return NextResponse.json({ externalUserId: sessionIdHeader });
+      return NextResponse.json({ 
+        externalUserId: sessionIdHeader,
+        source: "header" 
+      });
     }
     
-    // Try to get the user ID from Clerk
-    let userId = null;
-    try {
-      const auth = getAuth(request);
-      userId = auth.userId;
-      
-      if (debugMode && userId) {
-        console.log(`Found Clerk user ID: ${userId}`);
-      }
-    } catch (authError) {
-      if (debugMode) {
-        console.error("Error getting Clerk auth:", authError);
-      }
-      // We'll continue and use a fallback below
-    }
-    
-    // If we have a user ID, try to get or create a UUID from Clerk metadata
-    if (userId) {
-      try {
-        const externalUserId = await getPipedreamExternalUserId(userId);
-        
-        if (externalUserId) {
-          if (debugMode) {
-            console.log(`Retrieved external user ID from Clerk metadata: ${externalUserId}`);
-          }
-          
-          return NextResponse.json({ 
-            externalUserId,
-            source: "clerk_metadata"
-          });
-        }
-      } catch (clerkError) {
-        if (debugMode) {
-          console.error("Error retrieving from Clerk metadata:", clerkError);
-        }
-        // Continue to fallback
-      }
-    }
-    
-    // If we reach here, we don't have a valid ID from either headers or Clerk
-    // Generate a new random UUID as fallback
+    // If the header doesn't exist or isn't valid, generate a new random UUID
     const newUUID = randomUUID();
     
     if (debugMode) {
-      console.log(`Generated new fallback external user ID: ${newUUID}`);
+      console.log(`Generated new UUID: ${newUUID}`);
+      if (sessionIdHeader) {
+        console.log(`Ignoring invalid session ID from header: ${sessionIdHeader}`);
+      }
     }
     
     return NextResponse.json({ 
       externalUserId: newUUID,
-      source: "generated_fallback"
+      source: "generated"
     });
   } catch (error) {
     const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
@@ -75,13 +54,10 @@ export async function GET(request: NextRequest) {
       console.error("Error in external-user-id endpoint:", error);
     }
     
-    // Even if there's an error, generate a UUID to ensure the client has something to work with
-    const fallbackId = randomUUID();
+    // Return an authentication error on failure
     return NextResponse.json({ 
-      externalUserId: fallbackId,
-      error: "Generated fallback ID due to error",
-      source: "error_fallback",
+      error: "Authentication error",
       details: debugMode ? String(error) : undefined
-    });
+    }, { status: 401 });
   }
 }
