@@ -91,13 +91,9 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   let clerkRequest = request;
   if (isAuthRequest) {
     // https://clerk.com/docs/deployments/deploy-behind-a-proxy
-    // These get passed from the pipedreamcom-proxy to Vercel,
-    // then from Vercel to Clerk here
     const requestHeaders = new Headers(request.headers);
-    console.log(`x-forwarded-host: ${request.headers.get('x-forwarded-host')}`);
-    console.log(`x-forwarded-proto: ${request.headers.get('x-forwarded-proto')}`);
-    requestHeaders.set('x-forwarded-host', request.headers.get('x-forwarded-host') || '');
-    requestHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || '');
+    requestHeaders.set('x-forwarded-host', process.env.NODE_ENV === 'production' ? 'pipedream.com' : 'localhost:3000');
+    requestHeaders.set('x-forwarded-proto', process.env.NODE_ENV === 'production' ? 'https' : 'http');
     
     // Create a new request with the updated headers
     clerkRequest = new NextRequest(request.url, {
