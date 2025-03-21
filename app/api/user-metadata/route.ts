@@ -13,61 +13,92 @@ const PD_EXTERNAL_USER_ID_KEY = "pd_external_user_id"
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = getAuth(request)
-    console.log("[user-metadata] GET request, userId:", userId)
+    // Get the auth context from the request
+    console.log("[user-metadata] Processing GET request")
     
-    if (!userId) {
-      console.log("[user-metadata] No userId from auth")
+    try {
+      const { userId } = getAuth(request)
+      console.log("[user-metadata] Got userId from auth:", userId)
+      
+      if (!userId) {
+        console.log("[user-metadata] No userId from auth, returning 401")
+        return NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        )
+      }
+
+      // Get user data from Clerk using the direct clerkClient
+      console.log("[user-metadata] Fetching user data from Clerk for userId:", userId)
+      let user
+      try {
+        user = await clerkClient.users.getUser(userId)
+        console.log("[user-metadata] User data fetched, privateMetadata:", JSON.stringify(user.privateMetadata || {}))
+      } catch (clerkError) {
+        console.error("[user-metadata] Error fetching user from Clerk:", clerkError)
+        return NextResponse.json(
+          { error: "Error fetching user from Clerk" },
+          { status: 500 }
+        )
+      }
+    
+      // Check if we already have a Pipedream external user ID
+      let pdExternalUserId = user.privateMetadata[PD_EXTERNAL_USER_ID_KEY] as string
+      console.log("[user-metadata] Existing external user ID:", pdExternalUserId)
+    
+      // If we don't have an ID yet, create and store one
+      if (!pdExternalUserId) {
+        pdExternalUserId = randomUUID()
+        console.log("[user-metadata] Generated new external user ID:", pdExternalUserId)
+      
+        // Store the UUID in the user's private metadata
+        console.log("[user-metadata] Updating user metadata with new ID")
+        try {
+          // Create a metadata object with our new value
+          const metadata = {
+            privateMetadata: {
+              [PD_EXTERNAL_USER_ID_KEY]: pdExternalUserId,
+            },
+          }
+          console.log("[user-metadata] Metadata object to update:", JSON.stringify(metadata))
+        
+          await clerkClient.users.updateUserMetadata(userId, metadata)
+          console.log("[user-metadata] Successfully updated user metadata")
+        } catch (updateError) {
+          console.error("[user-metadata] Error updating user metadata:", updateError)
+          return NextResponse.json(
+            { error: "Error updating user metadata in Clerk" },
+            { status: 500 }
+          )
+        }
+      }
+    
+      // Fetch the user again to make sure we have the updated metadata
+      console.log("[user-metadata] Fetching updated user metadata")
+      let updatedUser
+      try {
+        updatedUser = await clerkClient.users.getUser(userId)
+        console.log("[user-metadata] Updated user metadata:", JSON.stringify(updatedUser.privateMetadata || {}))
+        console.log("[user-metadata] Final metadata state:", updatedUser.privateMetadata)
+      } catch (fetchError) {
+        console.error("[user-metadata] Error fetching updated user:", fetchError)
+        // Even if there's an error fetching the updated user, we can still return the existing ID
+      }
+    
+      // Return the external user ID that we either found or created
+      console.log("[user-metadata] Returning successful response with external ID:", pdExternalUserId)
+      return NextResponse.json({
+        success: true,
+        pd_external_user_id: pdExternalUserId,
+        allMetadata: updatedUser?.privateMetadata || user.privateMetadata
+      })
+    } catch (authError) {
+      console.error("[user-metadata] Error getting auth context:", authError)
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Error getting authentication context" },
         { status: 401 }
       )
     }
-
-    // Get user data from Clerk using the direct clerkClient
-    console.log("[user-metadata] Fetching user data from Clerk for userId:", userId)
-    const user = await clerkClient.users.getUser(userId)
-    console.log("[user-metadata] User data fetched, privateMetadata:", JSON.stringify(user.privateMetadata || {}))
-    
-    // Check if we already have a Pipedream external user ID
-    let pdExternalUserId = user.privateMetadata[PD_EXTERNAL_USER_ID_KEY] as string
-    console.log("[user-metadata] Existing external user ID:", pdExternalUserId)
-    
-    // If we don't have an ID yet, create and store one
-    if (!pdExternalUserId) {
-      pdExternalUserId = randomUUID()
-      console.log("[user-metadata] Generated new external user ID:", pdExternalUserId)
-      
-      // Store the UUID in the user's private metadata
-      console.log("[user-metadata] Updating user metadata with new ID")
-      try {
-        // Create a metadata object with our new value
-        const metadata = {
-          privateMetadata: {
-            [PD_EXTERNAL_USER_ID_KEY]: pdExternalUserId,
-          },
-        }
-        console.log("[user-metadata] Metadata object to update:", JSON.stringify(metadata))
-        
-        await clerkClient.users.updateUserMetadata(userId, metadata)
-        console.log("[user-metadata] Successfully updated user metadata")
-      } catch (updateError) {
-        console.error("[user-metadata] Error updating user metadata:", updateError)
-        throw updateError
-      }
-    }
-    
-    // Fetch the user again to make sure we have the updated metadata
-    console.log("[user-metadata] Fetching updated user metadata")
-    const updatedUser = await clerkClient.users.getUser(userId)
-    console.log("[user-metadata] Updated user metadata:", JSON.stringify(updatedUser.privateMetadata || {}))
-    console.log("[user-metadata] Final metadata state:", updatedUser.privateMetadata)
-    
-    return NextResponse.json({
-      success: true,
-      pd_external_user_id: pdExternalUserId,
-      allMetadata: updatedUser.privateMetadata
-    })
   } catch (error) {
     console.error("Error retrieving user metadata:", error)
     return NextResponse.json(

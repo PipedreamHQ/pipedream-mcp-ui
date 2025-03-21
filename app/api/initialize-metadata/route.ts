@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getAuth } from "@clerk/nextjs/server"
 import { clerkClient } from "@clerk/clerk-sdk-node"
 import { randomUUID } from "crypto"
+import { getBaseUrl } from "@/lib/clerk"
 
 /**
  * This API route initializes the external user ID in Clerk metadata and
@@ -59,21 +60,41 @@ export async function GET(request: NextRequest) {
         </head>
         <body>
           <script>
+            // Get the base URL from our helper function
+            const baseUrl = "${getBaseUrl()}";
+            
             // Get the redirect URL from sessionStorage
             let redirectUrl = sessionStorage.getItem('pdRedirectUrl') || '/';
             
-            // Add the /mcp prefix if the path doesn't already have it and it's not an absolute URL
-            if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('/mcp/') && !redirectUrl.startsWith('http')) {
-              redirectUrl = '/mcp' + redirectUrl;
+            // Parse the URL to handle both absolute and relative URLs consistently
+            let finalRedirectUrl;
+            
+            // If it's already an absolute URL, use it as is
+            if (redirectUrl.startsWith('http')) {
+              finalRedirectUrl = redirectUrl;
+            } 
+            // For relative URLs, construct with baseUrl + path
+            else {
+              // Add the /mcp prefix if needed
+              if (redirectUrl.startsWith('/') && !redirectUrl.startsWith('/mcp/')) {
+                redirectUrl = '/mcp' + redirectUrl;
+              }
+              
+              // Construct full URL with baseUrl
+              finalRedirectUrl = baseUrl + redirectUrl;
             }
             
-            console.log('Redirecting to:', redirectUrl);
+            // For debugging
+            console.log('Original redirect URL:', redirectUrl);
+            console.log('Final redirect URL:', finalRedirectUrl);
+            
+            console.log('Redirecting to:', finalRedirectUrl);
             
             // Clear the stored redirect URL
             sessionStorage.removeItem('pdRedirectUrl');
             
             // Redirect to the original destination
-            window.location.href = redirectUrl;
+            window.location.href = finalRedirectUrl;
           </script>
           <p>Initializing your account... You will be redirected shortly.</p>
         </body>

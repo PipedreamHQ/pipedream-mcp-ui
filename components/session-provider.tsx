@@ -26,32 +26,43 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // First check if we already have a UUID in sessionStorage for this page session
-      const storedId = typeof window !== 'undefined' ? sessionStorage.getItem('pdExternalUserId') : null;
-      
-      if (storedId) {
-        console.log("Using stored UUID from session:", storedId);
-        setSessionId(storedId);
-        return;
-      }
-      
-      // If no stored ID, get a new UUID from the server
+      // Instead of using the sessionStorage value directly, always fetch from the server
+      // to ensure we're getting the Clerk value if it exists
       try {
+        // This endpoint will prioritize the Clerk metadata value if it exists
         const response = await fetchWithCSRF('/mcp/api/external-user-id');
         
         if (response.ok) {
           const data = await response.json();
           if (data.externalUserId) {
-            console.log("Using server-generated UUID:", data.externalUserId);
-            const newUuid = data.externalUserId;
-            setSessionId(newUuid);
-            // Store in session storage so it persists during navigation
-            sessionStorage.setItem('pdExternalUserId', newUuid);
+            console.log(`Using external user ID from ${data.source}:`, data.externalUserId);
+            const externalId = data.externalUserId;
+            setSessionId(externalId);
+            
+            // Update sessionStorage with the most current value from Clerk
+            if (typeof window !== 'undefined') {
+              const currentStoredId = sessionStorage.getItem('pdExternalUserId');
+              
+              if (currentStoredId !== externalId) {
+                console.log("Updating sessionStorage with current external user ID:", externalId);
+                sessionStorage.setItem('pdExternalUserId', externalId);
+              }
+            }
             return;
           }
+        } else {
+          console.error("Error response from external-user-id API:", response.status, response.statusText);
         }
       } catch (error) {
         console.error("Error getting external user ID from server:", error);
+        
+        // Fallback to sessionStorage if the API call fails
+        const storedId = typeof window !== 'undefined' ? sessionStorage.getItem('pdExternalUserId') : null;
+        
+        if (storedId) {
+          console.log("Falling back to stored UUID from session:", storedId);
+          setSessionId(storedId);
+        }
       }
     }
     

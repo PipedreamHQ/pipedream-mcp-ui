@@ -211,7 +211,13 @@ export default function AccountsPage() {
           <p className="text-muted-foreground mb-4">
             You need to sign in to view and manage your connected accounts.
           </p>
-          <Button onClick={() => router.push("/sign-in?redirect_url=/mcp/accounts")}>
+          <Button onClick={() => {
+            // Import dynamically to avoid SSR issues
+            import('@/lib/clerk').then(({ getBaseUrl }) => {
+              const baseUrl = getBaseUrl();
+              router.push(`/sign-in?redirect_url=${encodeURIComponent(baseUrl + '/mcp/accounts')}`);
+            });
+          }}>
             Sign In
           </Button>
         </div>
