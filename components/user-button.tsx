@@ -29,6 +29,7 @@ export function UserButton() {
     
   // Check if pathname already has the /mcp prefix to avoid doubling it
   const fixedPathname = pathname.startsWith('/mcp') ? pathname : '/mcp' + pathname
+  // Always use fixed pathname with baseUrl to ensure domain is correct
   const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(baseUrl + fixedPathname)}`
   
   // Debug the redirection URL
