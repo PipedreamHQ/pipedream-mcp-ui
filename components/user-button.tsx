@@ -14,6 +14,7 @@ import {
 import { UserIcon } from "lucide-react"
 import { useCSRFToken } from "@/components/csrf-provider"
 import { CSRF_HEADER } from "@/lib/csrf"
+import { getBaseUrl } from "@/lib/clerk"
 
 export function UserButton() {
   const { isLoaded, userId } = useAuth()
@@ -23,14 +24,18 @@ export function UserButton() {
   const pathname = usePathname()
   const csrfToken = useCSRFToken()
   
-  // The issue is likely with app paths - ensure they're properly handled
-  // Fix the possible path issue for /app/[slug] paths and add basePath prefix
-  const fixedPathname = '/mcp' + pathname
-  const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(fixedPathname)}`
+  // Get the base URL from our helper function
+  const baseUrl = getBaseUrl()
+    
+  // Check if pathname already has the /mcp prefix to avoid doubling it
+  const fixedPathname = pathname.startsWith('/mcp') ? pathname : '/mcp' + pathname
+  const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(baseUrl + fixedPathname)}`
   
   // Debug the redirection URL
   if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
     console.log("UserButton: pathname =", pathname)
+    console.log("UserButton: baseUrl =", baseUrl)
+    console.log("UserButton: fixedPathname =", fixedPathname)
     console.log("UserButton: signInUrl =", signInUrl)
   }
 
@@ -60,7 +65,8 @@ export function UserButton() {
                 e.preventDefault();
                 // We're just executing signOut without await or any promise handling
                 // This is the cleanest approach, letting Clerk handle everything
-                signOut({ redirectUrl: '/mcp' + pathname });
+                // Use the same baseUrl + path pattern for consistency
+                signOut({ redirectUrl: baseUrl + fixedPathname });
               }}
             >
               Sign out

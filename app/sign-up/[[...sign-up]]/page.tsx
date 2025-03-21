@@ -2,14 +2,18 @@
 
 import { SignUp } from "@clerk/nextjs"
 import { useSearchParams } from "next/navigation"
+import { getBaseUrl } from "@/lib/clerk"
 
 export default function Page() {
   const searchParams = useSearchParams()
   // Get the redirect URL from search params, default to home path
   let originalRedirectUrl = searchParams.get("redirect_url") || "/"
   
+  // Get the base URL from our helper function
+  const baseUrl = getBaseUrl()
+    
   // Always redirect to the initialize-metadata page first, which will then redirect to the original destination
-  let redirectUrl = "/mcp/api/initialize-metadata"
+  let redirectUrl = baseUrl + "/mcp/api/initialize-metadata"
   
   // Debug the redirect URL
   if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth, useUser } from '@clerk/nextjs'
+import { getBaseUrl } from '@/lib/clerk'
 
 export default function RedirectHandler() {
   const router = useRouter()
@@ -27,20 +28,67 @@ export default function RedirectHandler() {
           console.log("RedirectHandler: Checking for external user ID")
         }
         
-        // Call our API to get the user metadata, which will create the external ID if needed
-        const response = await fetch('/mcp/api/user-metadata')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.pd_external_user_id) {
-            if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-              console.log("RedirectHandler: External user ID exists or was created:", data.pd_external_user_id)
+        // Use the correct basePath-prefixed API URL
+        // Get the base URL for proper request routing
+        const baseUrl = window.location.origin
+        
+        // Call the external-user-id API first, which will properly check Clerk metadata
+        // and ensure the Clerk value is used if it exists
+        try {
+          const response = await fetch('/mcp/api/external-user-id', {
+            method: 'GET',
+            credentials: 'include', // Include cookies for auth
+            headers: {
+              'Content-Type': 'application/json'
             }
-            
-            // Store in sessionStorage for use in the current session
-            sessionStorage.setItem('pdExternalUserId', data.pd_external_user_id)
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.externalUserId) {
+              if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+                console.log(`RedirectHandler: External user ID from ${data.source}:`, data.externalUserId)
+              }
+              
+              // Store in sessionStorage for use in the current session
+              sessionStorage.setItem('pdExternalUserId', data.externalUserId)
+              // Set the flag to avoid checking again this session
+              sessionStorage.setItem('pd_checked_user_metadata', 'true')
+              return // Successfully got the ID, so return early
+            }
+          } else {
+            console.error("RedirectHandler: Failed to get external user ID. Status:", response.status)
           }
-        } else {
-          console.error("RedirectHandler: Failed to get or create external user ID")
+        } catch (fetchError) {
+          console.error("RedirectHandler: Error fetching external user ID:", fetchError)
+          // Continue to the fallback approach if this fails
+        }
+        
+        // Fallback: Call the user-metadata API as a backup
+        try {
+          const response = await fetch('/mcp/api/user-metadata', {
+            method: 'GET',
+            credentials: 'include', // Include cookies for auth
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.pd_external_user_id) {
+              if (process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
+                console.log("RedirectHandler: External user ID from user-metadata API:", data.pd_external_user_id)
+              }
+              
+              // Store in sessionStorage for use in the current session
+              sessionStorage.setItem('pdExternalUserId', data.pd_external_user_id)
+            }
+          } else {
+            console.error("RedirectHandler: Failed to get or create external user ID. Status:", response.status)
+          }
+        } catch (fetchError) {
+          console.error("RedirectHandler: Error fetching user metadata:", fetchError)
         }
         
         // Set the flag to avoid checking again this session
