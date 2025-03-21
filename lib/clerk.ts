@@ -8,9 +8,8 @@ export function getBaseUrl() {
     return window.location.origin
   }
 
-  // For server-side rendering, try to determine the origin
   if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
+    return `https://pipedream.com`
   }
 
   // Fallback for local development
