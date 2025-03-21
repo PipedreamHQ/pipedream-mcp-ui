@@ -22,6 +22,9 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    serverActions: {
+      allowedOrigins: ['pipedream.com', 'localhost:3000', 'pipedream-mcp-ui.vercel.app'],
+    },
   },
 }
 
