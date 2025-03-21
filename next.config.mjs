@@ -30,6 +30,19 @@ const nextConfig = {
       allowedOrigins: ['pipedream.com', 'localhost:3000', 'pipedream-mcp-ui.vercel.app'],
     },
   },
+  headers: async () => {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'x-middleware-cache',
+            value: 'no-cache',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 mergeConfig(nextConfig, userConfig)
