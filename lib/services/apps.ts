@@ -149,34 +149,32 @@ export async function getApps({
 
     const resp = await pd.getApps(options);
 
-    // Filter by category if specified
-    let filteredApps = resp.data || [];
-
-    if (category && filteredApps.length > 0) {
-      filteredApps = filteredApps.filter(
-        (app: {
-          id: string;
-          name: string;
-          name_slug: string;
-          description?: string;
-          categories?: string[];
-        }) => app.categories && app.categories.some((cat: string) => cat.toLowerCase() === category.toLowerCase()),
-      );
-    }
-
-    // Map Pipedream API data to our app structure
-    const mappedApps = filteredApps.map((app: {
+    // Define the type of the API response data
+    type PipedreamApp = {
       id: string;
       name: string;
       name_slug: string;
       description?: string;
       categories?: string[];
-    }) => ({
+      [key: string]: unknown;
+    };
+
+    // Filter by category if specified
+    let filteredApps = (resp.data || []) as PipedreamApp[];
+
+    if (category && filteredApps.length > 0) {
+      filteredApps = filteredApps.filter(
+        (app) => app.categories && app.categories.some((cat: string) => cat.toLowerCase() === category.toLowerCase()),
+      );
+    }
+
+    // Map Pipedream API data to our app structure
+    const mappedApps = filteredApps.map((app): App => ({
       id: app.id,
       name: app.name,
       name_slug: app.name_slug,
       app_hid: app.id, // Use id as app_hid for Pipedream API
-      description: app.description || "",
+      description: app.description || "", 
       categories: app.categories || [],
       // No featured_weight for Pipedream API
     }));
