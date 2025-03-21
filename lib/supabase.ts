@@ -1,18 +1,14 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Log the environment variables (without exposing secrets)
-console.log("Supabase URL available:", !!process.env.NEXT_PUBLIC_SUPABASE_URL)
-console.log("Supabase Anon Key available:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-
 // Create a single supabase client for the entire app
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
   throw new Error("Missing required Supabase environment variables")
 }
 
 // Create a server-side client to prevent exposing credentials to the client
 export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY,
   {
     auth: {
       persistSession: false,
