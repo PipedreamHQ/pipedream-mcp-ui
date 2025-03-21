@@ -6,7 +6,7 @@ import { MainNav } from "@/components/main-nav"
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 pt-8 pb-12">
         <MainNav />
 
         <div className="flex flex-col md:flex-row gap-8">

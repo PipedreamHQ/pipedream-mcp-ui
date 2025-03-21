@@ -191,14 +191,14 @@ export default async function AppDetailPage({ params }: { params: Promise<{ slug
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-8 pb-12">
         <MainNav />
         
         <div className="mt-6 mb-6">
           <Link href="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to MCP servers
+              All MCP servers
             </Button>
           </Link>
         </div>
@@ -207,12 +207,12 @@ export default async function AppDetailPage({ params }: { params: Promise<{ slug
           <AppDetailHeader app={app} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           <div className="lg:col-span-2">
             <InstallationTabs app={app} />
           </div>
 
-          <div>
+          <div className="mt-6 lg:mt-0">
             <AvailableActions actions={actions} />
           </div>
         </div>

@@ -4,7 +4,7 @@ import { GeistSans } from 'geist/font/sans'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 // Use ClerkProvider directly as shown in the official example
-import { ClerkProvider } from "@clerk/nextjs"
+import { ClerkProvider, ClerkLoaded } from "@clerk/nextjs"
 import UserMetadataInitializer from "@/components/user-metadata-initializer"
 import RedirectHandler from "@/components/redirect-handler"
 import CSRFProvider from "@/components/csrf-provider"
@@ -51,31 +51,29 @@ export default async function RootLayout({
   const token = await csrfToken();
   
   return (
-    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
-      <head>
-        <meta name="csrf-token" content={token} />
-        <meta name="csp-nonce" content={token} />
-      </head>
-      <body className="font-sans">
-        <ClerkProvider 
-          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-          appearance={{
-            variables: {
-              // No special variables needed for now
-            },
-          }}
-        >
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <CSRFProvider>
-              <SessionProvider>
-                <UserMetadataInitializer />
-                <RedirectHandler />
-                {children}
-              </SessionProvider>
-            </CSRFProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={{
+        baseTheme: undefined, // Let the app control the theme
+        elements: {
+          formButtonPrimary: "bg-primary hover:bg-primary/90",
+          card: "shadow-lg",
+        },
+      }}
+    >
+      <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
+        <body className="font-sans transition-all duration-200">
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <ClerkLoaded>
+              <UserMetadataInitializer />
+            </ClerkLoaded>
+            <RedirectHandler />
+            <div className="transition-opacity duration-300">
+              {children}
+            </div>
           </ThemeProvider>
-        </ClerkProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

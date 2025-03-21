@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { UserButton } from "@/components/user-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@clerk/nextjs"
@@ -30,30 +29,40 @@ export function MainNav() {
   }, [isLoaded, userId])
 
   return (
-    <div className="flex justify-between items-center mb-10">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">AI developer toolkit from Pipedream</h1>
-        <p className="text-muted-foreground">
-          Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
-          <Link 
-            href="https://pipedream.com/connect"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:underline font-semibold"
-          >
-            Pipedream Connect
-          </Link>
-        </p>
+    <div className="mb-6 md:mb-10 mt-0 relative transition-all duration-300">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+        <div className="space-y-2 mb-4 md:mb-0 md:max-w-3xl">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight transition-all duration-300">AI developer toolkit from Pipedream</h1>
+          <p className="text-sm md:text-base text-muted-foreground transition-all duration-300 md:pr-8">
+            Access MCP servers for more than 2,500 APIs with 8,000 prebuilt tools using{` `}
+            <Link 
+              href="https://pipedream.com/connect"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline font-semibold transition-colors duration-200"
+            >
+              Pipedream Connect
+            </Link>
+          </p>
+        </div>
+        
+        <div className="flex flex-row items-center mb-4 md:mb-0">
+          <div className="flex items-center gap-2 ml-auto">
+            <UserButton />
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
-      <div className="flex items-center space-x-4">
-        <nav className="flex items-center space-x-2">
+      
+      <nav className="flex w-full md:max-w-fit justify-center md:justify-end border rounded-lg p-1 bg-muted/30 overflow-hidden transition-all duration-300 md:ml-auto">
+        <div className="flex flex-wrap w-full md:w-auto justify-center items-center gap-2">
           <Link 
             href="/" 
             className={cn(
-              "px-4 py-2 rounded-md font-medium transition-colors text-sm",
+              "px-3 py-1.5 md:px-4 md:py-2 rounded-md font-medium transition-all duration-300 text-xs md:text-sm w-full md:w-40 text-center",
               isHomePage || isAppDetailPage
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted hover:bg-muted/80 text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "hover:bg-muted/80 text-foreground"
             )}
           >
             MCP Servers
@@ -61,20 +70,18 @@ export function MainNav() {
           <Link 
             href="/accounts" 
             className={cn(
-              "px-4 py-2 rounded-md font-medium transition-colors text-sm",
+              "px-3 py-1.5 md:px-4 md:py-2 rounded-md font-medium transition-all duration-300 text-xs md:text-sm w-full md:w-48 text-center",
               isAccountsPage
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted hover:bg-muted/80 text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "hover:bg-muted/80 text-foreground"
             )}
           >
             Connected Accounts
           </Link>
-          
-          {/* No debug links needed anymore */}
-        </nav>
-        <UserButton />
-        <ThemeToggle />
-      </div>
+        </div>
+      </nav>
+      <UserButton />
+      <ThemeToggle />
     </div>
   )
 }
