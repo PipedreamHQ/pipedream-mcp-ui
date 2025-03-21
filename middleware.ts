@@ -238,10 +238,10 @@ export const config = {
     "/((?!_next/image|_next/static|favicon.ico).*)",
     "/(api|trpc)(.*)",
     "/",
-    // Include basePath-specific routes
-    `${BASE_PATH}/:path*`,
-    `${BASE_PATH}/api/:path*`, 
-    `${BASE_PATH}/sign-in/:path*`,
-    `${BASE_PATH}/sign-up/:path*`
+    // Include basePath-specific routes - must be hardcoded strings
+    "/mcp/:path*",
+    "/mcp/api/:path*", 
+    "/mcp/sign-in/:path*",
+    "/mcp/sign-up/:path*"
   ],
 };
