@@ -56,11 +56,8 @@ export async function POST(req: Request) {
     try {
       const userId = id as string;
       
-      console.log(`New user created: ${userId}`);
-      
       // Generate a UUID
       const externalUserId = randomUUID();
-      console.log(`Generated external user ID: ${externalUserId} for user ${userId}`);
       
       // Store it in Clerk's user metadata
       await clerkClient.users.updateUserMetadata(userId, {
@@ -69,11 +66,8 @@ export async function POST(req: Request) {
         }
       });
       
-      console.log(`Successfully stored external user ID for user ${userId}`);
-      
       return NextResponse.json({ success: true, message: `External user ID created for ${userId}` });
     } catch (error) {
-      console.error('Error handling user creation webhook:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process user creation' },
         { status: 500 }

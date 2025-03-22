@@ -27,8 +27,6 @@ export default function UserMetadataInitializer() {
     if (hasInitialized === 'true') return
     
     async function initializeUserMetadata() {
-      console.log('UserMetadataInitializer: Initializing external user ID')
-      
       try {
         // Make an API call to retrieve or create the external user ID
         const response = await fetchWithCSRF('/mcp/api/user-metadata')
@@ -37,21 +35,15 @@ export default function UserMetadataInitializer() {
           const data = await response.json()
           
           if (data.pd_external_user_id) {
-            console.log('UserMetadataInitializer: External user ID created/retrieved:', data.pd_external_user_id)
-            
             // Store in sessionStorage for use in the current session
             sessionStorage.setItem('pdExternalUserId', data.pd_external_user_id)
             
             // Mark as initialized in localStorage to avoid redundant calls
             localStorage.setItem(storageKey, 'true')
-          } else {
-            console.error('UserMetadataInitializer: No external user ID in response')
           }
-        } else {
-          console.error('UserMetadataInitializer: Failed to get or create external user ID')
         }
       } catch (error) {
-        console.error('UserMetadataInitializer: Error initializing external user ID:', error)
+        // Silently fail - the session provider will handle retry
       }
     }
 

@@ -13,11 +13,8 @@ export async function GET(request: NextRequest) {
     const { userId } = getAuth(request)
     
     if (!userId) {
-      console.log("[initialize-metadata] No user ID found, redirecting to home")
       return NextResponse.redirect(new URL('/', request.url))
     }
-
-    console.log(`[initialize-metadata] Processing metadata initialization for user: ${userId}`)
     
     // Get the user data
     const user = await clerkClient.users.getUser(userId)
@@ -28,7 +25,6 @@ export async function GET(request: NextRequest) {
     if (!pdExternalUserId) {
       // Generate a new UUID if one doesn't exist
       pdExternalUserId = randomUUID()
-      console.log(`[initialize-metadata] Generated new external ID: ${pdExternalUserId}`)
       
       // Store it in Clerk's user metadata
       await clerkClient.users.updateUserMetadata(userId, {
@@ -36,10 +32,6 @@ export async function GET(request: NextRequest) {
           pd_external_user_id: pdExternalUserId
         }
       })
-      
-      console.log(`[initialize-metadata] Stored external ID in Clerk metadata: ${pdExternalUserId}`)
-    } else {
-      console.log(`[initialize-metadata] User already has external ID: ${pdExternalUserId}`)
     }
     
     // Add a small delay to ensure Clerk has time to update the metadata

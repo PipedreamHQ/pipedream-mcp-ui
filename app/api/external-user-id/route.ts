@@ -1,63 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getAuth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
-// UUID v4 validation regex
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const PD_EXTERNAL_USER_ID_KEY = "pd_external_user_id";
 
 export async function GET(request: NextRequest) {
   try {
-    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
-    
     // Verify the user is authenticated
     const { userId } = getAuth(request);
     if (!userId) {
-      if (debugMode) {
-        console.log("User not authenticated, access denied");
-      }
       return NextResponse.json({ 
         error: "Authentication required" 
       }, { status: 401 });
     }
     
-    // Check if a client-provided sessionId is available in headers
-    const sessionIdHeader = request.headers.get('x-session-id');
+    // First check if the user already has an external ID in Clerk
+    const user = await clerkClient.users.getUser(userId);
+    let pdExternalUserId = user.privateMetadata[PD_EXTERNAL_USER_ID_KEY] as string;
     
-    // If we have a session ID from the client and it's a valid UUID, use it to ensure consistency
-    if (sessionIdHeader && UUID_REGEX.test(sessionIdHeader)) {
-      if (debugMode) {
-        console.log(`Using valid client-provided session ID from header: ${sessionIdHeader}`);
-      }
+    // If found in Clerk, return it
+    if (pdExternalUserId) {
       return NextResponse.json({ 
-        externalUserId: sessionIdHeader,
-        source: "header" 
+        externalUserId: pdExternalUserId,
+        source: "clerk_metadata" 
       });
     }
     
-    // If the header doesn't exist or isn't valid, generate a new random UUID
+    // If no ID exists in Clerk, generate a new random UUID
     const newUUID = randomUUID();
     
-    if (debugMode) {
-      console.log(`Generated new UUID: ${newUUID}`);
-      if (sessionIdHeader) {
-        console.log(`Ignoring invalid session ID from header: ${sessionIdHeader}`);
-      }
-    }
+    // Store the new UUID in Clerk metadata
+    await clerkClient.users.updateUserMetadata(userId, {
+      privateMetadata: {
+        [PD_EXTERNAL_USER_ID_KEY]: newUUID,
+      },
+    });
     
     return NextResponse.json({ 
       externalUserId: newUUID,
       source: "generated"
     });
   } catch (error) {
-    const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
-    if (debugMode) {
-      console.error("Error in external-user-id endpoint:", error);
-    }
-    
     // Return an authentication error on failure
     return NextResponse.json({ 
-      error: "Authentication error",
-      details: debugMode ? String(error) : undefined
+      error: "Authentication error"
     }, { status: 401 });
   }
 }
